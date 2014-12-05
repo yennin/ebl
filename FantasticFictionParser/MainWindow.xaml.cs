@@ -38,7 +38,7 @@ namespace FantasticFictionParser
 
         private void SearchBook_Click(object sender, RoutedEventArgs e)
         {
-            string urlAddress = "http://www.fantasticfiction.co.uk/db-search/v4/books/?return-fields=booktype,title,year,pfn,hasimage,authorsinfo,seriesinfo,db,imageloc&q=";
+            string urlAddress = "http://www.fantasticfiction.co.uk/db-search/v4/books/?start=0&size=50&return-fields=booktype,title,year,pfn,hasimage,authorsinfo,seriesinfo,db,imageloc&q=";
             string bookName = WebUtility.UrlEncode( titleBox.Text );
 
 

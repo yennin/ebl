@@ -48,7 +48,7 @@ namespace FantasticFictionParser
 
         public string Title
         {
-            get { return data.title.FirstOrDefault(); }
+            get { return System.Net.WebUtility.HtmlDecode(data.title.FirstOrDefault()); }
         }
 
         public string Year
