@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -24,13 +25,15 @@ namespace FantasticFictionParser
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ISet<Book> myBooks = new HashSet<Book>();
+        private ObservableCollection<Book> books = new ObservableCollection<Book>(new HashSet<Book>());
+        private ISet<Book> removedBooks = new HashSet<Book>();
         private ExcelStorage excel;
 
         public MainWindow()
         {
             InitializeComponent();
             excel = new ExcelStorage();
+            bookGrid.DataContext = books;
         }
 
         private void SearchBook_Click(object sender, RoutedEventArgs e)
@@ -66,8 +69,8 @@ namespace FantasticFictionParser
                 SearchResult result = JsonConvert.DeserializeObject<SearchResult>(data);
                 if (result.hits.found > 0)
                 {
-                    List<Book> books = mapBooks(result.hits.hit);
-                    resultGrid.DataContext = books;
+                    ObservableCollection<Book> foundBooks = new ObservableCollection<Book>(mapBooks(result.hits.hit));
+                    resultGrid.DataContext = foundBooks;
                 }
             }
         }
@@ -106,13 +109,8 @@ namespace FantasticFictionParser
             List<Book> selectedBooks = resultGrid.SelectedItems.Cast<Book>().ToList();
             foreach (var book in selectedBooks)
 	        {
-                myBooks.Add(book);
+                books.Add(book);
         	}
-        }
-
-        private void myBooksButton_Click(object sender, RoutedEventArgs e)
-        {
-            resultGrid.DataContext = myBooks;
         }
 
         private void saveMyBooks_Click(object sender, RoutedEventArgs e)
@@ -131,7 +129,7 @@ namespace FantasticFictionParser
             {
                 // Save document
                 string filename = dlg.FileName;
-                foreach (Book book in myBooks)
+                foreach (Book book in books)
                 {
                     excel.AddRow(book);
                 }
@@ -140,18 +138,12 @@ namespace FantasticFictionParser
 
         }
 
-        private void resetMyBooks_Click(object sender, RoutedEventArgs e)
-        {
-            myBooks.Clear();
-            resultGrid.DataContext = null;
-        }
-
         private void resultGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
         {
             DataGrid grid = sender as DataGrid;
 
             Book book = (Book)grid.SelectedItem;
-            myBooks.Add(book);
+            books.Add(book);
         }
 
         private void LoadMyBooks()
@@ -167,7 +159,8 @@ namespace FantasticFictionParser
             using (JsonReader jw = new JsonTextReader(sw))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                myBooks = serializer.Deserialize<ISet<Book>>(jw);
+                books = new ObservableCollection<Book>(new HashSet<Book>(serializer.Deserialize<ISet<Book>>(jw)));
+                bookGrid.DataContext = books;
             }
             
         }
@@ -185,7 +178,7 @@ namespace FantasticFictionParser
                 jw.Formatting = Formatting.Indented;
 
                 JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(jw, myBooks);
+                serializer.Serialize(jw, books);
             }
         }
 
@@ -197,6 +190,25 @@ namespace FantasticFictionParser
         private void Window_Initialized(object sender, EventArgs e)
         {
             LoadMyBooks();
+        }
+
+        private void bookGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            DataGrid grid = sender as DataGrid;
+
+            Book book = (Book)grid.SelectedItem;
+            books.Remove(book);
+
+        }
+
+        private void restore_Click(object sender, RoutedEventArgs e)
+        {
+            LoadMyBooks();
+        }
+
+        private void saveButton_Click(object sender, RoutedEventArgs e)
+        {
+            StoreMyBooks();
         }
     }
 }
