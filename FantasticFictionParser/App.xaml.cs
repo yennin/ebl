@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -13,37 +14,36 @@ namespace FantasticFictionParser
     /// </summary>
     public partial class App : Application
     {
-        public bool DoHandle { get; set; }
-        private void Application_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
-        {
-            if (this.DoHandle)
+
+        public App(){
+
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) =>
             {
-                //Handling the exception within the UnhandledExcpeiton handler.
-                MessageBox.Show(e.Exception.Message, "Exception Caught", MessageBoxButton.OK, MessageBoxImage.Error);
-                e.Handled = true;
-            }
-            else
+
+                String resourceName = "FantasticFictionParser." +
+                   new AssemblyName(args.Name).Name + ".dll";
+
+
+                return LoadAssemply(resourceName);
+
+            };
+        }
+
+        private static Assembly LoadAssemply(string resourceName)
+        {
+            using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
             {
-                //If you do not set e.Handled to true, the application will close due to crash.
-                MessageBox.Show("Application is going to close! ", "Uncaught Exception");
-                e.Handled = false;
+
+                Byte[] assemblyData = new Byte[stream.Length];
+
+                stream.Read(assemblyData, 0, assemblyData.Length);
+
+                return Assembly.Load(assemblyData);
+
             }
-        }
-
-        private void Application_Startup(object sender, StartupEventArgs e)
-        {
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-        }
-
-        void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            Exception ex = e.ExceptionObject as Exception;
-            MessageBox.Show(ex.Message, "Uncaught Thread Exception", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
-
-        private void Application_Exit(object sender, ExitEventArgs e)
-        {
 
         }
+
     }
+
 }
