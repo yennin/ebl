@@ -1,0 +1,59 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:FantasticFictionParser" x:Class="FantasticFictionParser.MainWindow"
+        Title="Fantastic Fiction Book Search" Height="623.1" Width="1071" Activated="Window_Activated" Closing="Window_Closing" Initialized="Window_Initialized">
+    <Grid Margin="10">
+        <Button x:Name="SearchBook" Content="Search Book" Margin="10,4,4,0" VerticalAlignment="Top" IsDefault="True" Click="SearchBook_Click" Width="92" Height="23" MinWidth="92" MinHeight="23" MaxWidth="92" MaxHeight="23" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Right" ClipToBounds="True" SnapsToDevicePixels="True"/>
+        <TextBox x:Name="titleBox" Height="23" Margin="72,4,101,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <Label Content="Book Title" HorizontalAlignment="Left" Margin="4,4,0,0" VerticalAlignment="Top"/>
+        <DataGrid x:Name="resultGrid" Margin="4,32" IsReadOnly="True" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" AlternatingRowBackground="#FFCCCCCC" RowBackground="#FFDDDDDD" ItemsSource="{Binding}" AutoGenerateColumns="False" Padding="0" MouseDoubleClick="resultGrid_MouseDoubleClick">
+            <DataGrid.CellStyle>
+                <Style TargetType="DataGridCell">
+                    <Setter Property="Padding" Value="2"/>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="{x:Type DataGridCell}">
+                                <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                    <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                                </Border>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </DataGrid.CellStyle>
+            <DataGrid.Columns>
+                <DataGridTemplateColumn Header="Image" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Image Source="{Binding imageLoc}">
+
+                            </Image>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridHyperlinkColumn Header="Title"  Binding="{Binding pfn}" ContentBinding="{Binding title}" Width="3*">
+                    <DataGridHyperlinkColumn.ElementStyle>
+                        <Style>
+                            <EventSetter Event="Hyperlink.Click" Handler="DataGrid_Hyperlink_Click"/>
+                        </Style>
+                    </DataGridHyperlinkColumn.ElementStyle>
+                </DataGridHyperlinkColumn>
+                <DataGridHyperlinkColumn Header="Author" Binding="{Binding authorUrl}" ContentBinding="{Binding authorName}" Width="*">
+                    <DataGridHyperlinkColumn.ElementStyle>
+                        <Style>
+                            <EventSetter Event="Hyperlink.Click" Handler="DataGrid_Hyperlink_Click"/>
+                        </Style>
+                    </DataGridHyperlinkColumn.ElementStyle>
+                </DataGridHyperlinkColumn>
+                <DataGridTextColumn Header="Year" Binding="{Binding year}" Width="50" />
+                <DataGridTextColumn Header="Series" Binding="{Binding seriesName}" Width="2*" />
+                <DataGridTextColumn Header="No."  Binding="{Binding seriesNumber}" Width="30" CanUserResize="False" />
+            </DataGrid.Columns>
+        </DataGrid>
+        <Button x:Name="addButton" Content="Add" HorizontalAlignment="Right" Margin="10,10,4,4" VerticalAlignment="Bottom" Width="93" Height="23" Click="addButton_Click"/>
+        <Button x:Name="myBooksButton" Content="Show My Books" HorizontalAlignment="Left" Margin="4,0,0,4" VerticalAlignment="Bottom" Width="96" Height="23" Click="myBooksButton_Click"/>
+        <Button x:Name="saveMyBooks" Content="Export To Excel" HorizontalAlignment="Left" Margin="207,0,0,4" VerticalAlignment="Bottom" Width="94" Height="23" Click="saveMyBooks_Click"/>
+        <Button x:Name="resetMyBooks" Content="Reset My Books" HorizontalAlignment="Left" Margin="105,0,0,4" VerticalAlignment="Bottom" Width="97" Height="23" Click="resetMyBooks_Click"/>
+    </Grid>
+</Window>
