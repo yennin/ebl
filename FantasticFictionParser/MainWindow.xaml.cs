@@ -41,6 +41,7 @@ namespace FantasticFictionParser
             string urlAddress = "http://www.fantasticfiction.co.uk/db-search/v4/books/?start=0&size=50&return-fields=booktype,title,year,pfn,hasimage,authorsinfo,seriesinfo,db,imageloc&q=";
             string bookName = WebUtility.UrlEncode( titleBox.Text );
 
+           
 
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(urlAddress+bookName);
             HttpWebResponse response = (HttpWebResponse)request.GetResponse();
@@ -60,6 +61,7 @@ namespace FantasticFictionParser
                 int end = data.LastIndexOf("}");
                 if (start < 0 || end < 0)
                 {
+                    statusBarLeft.Content = "No results.";
                     return;
                 }
                 data = data.Substring(start, end - start + 1);
@@ -71,6 +73,11 @@ namespace FantasticFictionParser
                 {
                     ObservableCollection<Book> foundBooks = new ObservableCollection<Book>(mapBooks(result.hits.hit));
                     resultGrid.DataContext = foundBooks;
+                    statusBarLeft.Content = string.Format("Showing {0} of {1} books.", foundBooks.Count, result.hits.found);
+                }
+                else
+                {
+                    statusBarLeft.Content = "No results.";
                 }
             }
         }
@@ -127,13 +134,21 @@ namespace FantasticFictionParser
             // Process save file dialog box results
             if (result == true)
             {
-                // Save document
-                string filename = dlg.FileName;
-                foreach (Book book in books)
+                Mouse.OverrideCursor = Cursors.Wait;
+                try
                 {
-                    excel.AddRow(book);
+                    // Save document
+                    string filename = dlg.FileName;
+                    foreach (Book book in books)
+                    {
+                        excel.AddRow(book);
+                    }
+                    excel.Save(filename);
                 }
-                excel.Save(filename);
+                finally
+                {
+                    Mouse.OverrideCursor = null;
+                }
             }
 
         }
@@ -144,6 +159,7 @@ namespace FantasticFictionParser
 
             Book book = (Book)grid.SelectedItem;
             books.Add(book);
+            statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
         }
 
         private void LoadMyBooks()
@@ -162,7 +178,7 @@ namespace FantasticFictionParser
                 books = new ObservableCollection<Book>(new HashSet<Book>(serializer.Deserialize<ISet<Book>>(jw)));
                 bookGrid.DataContext = books;
             }
-            
+            statusBarLeft.Content = string.Format("{0} books in library.", books.Count);
         }
 
         private void StoreMyBooks()
@@ -198,7 +214,7 @@ namespace FantasticFictionParser
 
             Book book = (Book)grid.SelectedItem;
             books.Remove(book);
-
+            statusBarLeft.Content = string.Format("'{0}' removed to library.", book.title);
         }
 
         private void restore_Click(object sender, RoutedEventArgs e)
@@ -209,6 +225,24 @@ namespace FantasticFictionParser
         private void saveButton_Click(object sender, RoutedEventArgs e)
         {
             StoreMyBooks();
+        }
+
+        private void resultGrid_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                e.Handled = true;
+                DataGrid grid = sender as DataGrid;
+
+                Book book = (Book)grid.SelectedItem;
+                books.Add(book);
+                statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
+            }
+        }
+
+        private void TabItem_GotFocus(object sender, RoutedEventArgs e)
+        {
+            statusBarLeft.Content = string.Format("{0} books in library.", books.Count);
         }
     }
 }
