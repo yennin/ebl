@@ -4,11 +4,11 @@
         xmlns:local="clr-namespace:FantasticFictionParser" x:Class="FantasticFictionParser.MainWindow"
         Title="Fantastic Fiction Book Search" Height="755.1" Width="1071" Activated="Window_Activated" Closing="Window_Closing" Initialized="Window_Initialized">
     <Grid Margin="5">
-        <TabControl Margin="0,0,0,33">
-            <TabItem Header="Search">
+        <TabControl x:Name="tabs" Margin="0,0,0,33">
+            <TabItem x:Name="searchTab" Header="Search">
                 <Grid Background="#FFE5E5E5" Margin="0">
                     <Button x:Name="SearchBook" Content="Search Book" Margin="0,4,4,0" VerticalAlignment="Top" IsDefault="True" Click="SearchBook_Click" Width="92" Height="23" MinWidth="92" MinHeight="23" MaxWidth="92" MaxHeight="23" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Right" ClipToBounds="True" SnapsToDevicePixels="True"/>
-                    <TextBox x:Name="titleBox" Height="23" Margin="70,4,101,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+                    <TextBox x:Name="titleBox" Height="23" Margin="70,4,101,0" TextWrapping="Wrap" VerticalAlignment="Top" GotKeyboardFocus="titleBox_GotKeyboardFocus" GotMouseCapture="titleBox_GotMouseCapture"/>
                     <Label Content="Book Title" HorizontalAlignment="Left" Margin="4,4,0,0" VerticalAlignment="Top"/>
                     <DataGrid x:Name="resultGrid" Margin="4,32,4,4" IsReadOnly="True" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" AlternatingRowBackground="#FFCCCCCC" RowBackground="#FFDDDDDD" ItemsSource="{Binding}" AutoGenerateColumns="False" Padding="0" MouseDoubleClick="resultGrid_MouseDoubleClick" PreviewKeyDown="resultGrid_PreviewKeyDown">
                         <DataGrid.CellStyle>
@@ -54,7 +54,7 @@
                     </DataGrid>
                 </Grid>
             </TabItem>
-            <TabItem Header="Books" GotFocus="TabItem_GotFocus">
+            <TabItem x:Name="booksTab" Header="Books" GotFocus="booksTab_GotFocus">
                 <Grid Background="#FFE5E5E5" Margin="0">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="25*"/>

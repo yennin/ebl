@@ -220,11 +220,13 @@ namespace FantasticFictionParser
         private void restore_Click(object sender, RoutedEventArgs e)
         {
             LoadMyBooks();
+            statusBarLeft.Content = string.Format("Books restored from local storage.");
         }
 
         private void saveButton_Click(object sender, RoutedEventArgs e)
         {
             StoreMyBooks();
+            statusBarLeft.Content = string.Format("Books saved to local storage.");
         }
 
         private void resultGrid_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -240,9 +242,35 @@ namespace FantasticFictionParser
             }
         }
 
-        private void TabItem_GotFocus(object sender, RoutedEventArgs e)
+        private void booksTab_GotFocus(object sender, RoutedEventArgs e)
         {
             statusBarLeft.Content = string.Format("{0} books in library.", books.Count);
         }
+
+        private void titleBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            titleBox.SelectAll();
+        }
+
+        private void titleBox_GotMouseCapture(object sender, MouseEventArgs e)
+        {
+            titleBox.SelectAll();
+        }
+
+        //private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        //{
+        //    if (e.Source is TabControl)
+        //    {
+        //        if (searchTab.IsSelected)
+        //        {
+                    
+        //            titleBox.Focus();
+        //            titleBox.SelectAll();
+        //            UpdateLayout();
+        //            Debug.WriteLine("set focus");
+        //        }
+        //    }
+        //}
+
     }
 }
