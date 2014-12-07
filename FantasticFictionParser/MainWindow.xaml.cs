@@ -6,6 +6,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Media;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -62,6 +63,7 @@ namespace FantasticFictionParser
                 if (start < 0 || end < 0)
                 {
                     statusBarLeft.Content = "No results.";
+                    SystemSounds.Exclamation.Play();
                     return;
                 }
                 data = data.Substring(start, end - start + 1);
@@ -78,6 +80,7 @@ namespace FantasticFictionParser
                 else
                 {
                     statusBarLeft.Content = "No results.";
+                    SystemSounds.Exclamation.Play();
                 }
             }
         }
@@ -98,12 +101,6 @@ namespace FantasticFictionParser
             }).ToList();
             return foundBooks;
         }
-
-        //private void Window_Activated(object sender, EventArgs e)
-        //{
-        //    titleBox.Focus();
-        //}
-
 
         private void DataGrid_Hyperlink_Click(object sender, RoutedEventArgs e)
         {
@@ -271,26 +268,15 @@ namespace FantasticFictionParser
             titleBox.SelectAll();
         }
 
-        private void RefreshCollectionViewSource()
+        private ICollectionView GetCollectionView()
         {
-            ICollectionView view = CollectionViewSource.GetDefaultView(bookGrid.ItemsSource);
-            view.Refresh();
+            return CollectionViewSource.GetDefaultView(bookGrid.ItemsSource);
         }
 
-        //private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        //{
-        //    if (e.Source is TabControl)
-        //    {
-        //        if (searchTab.IsSelected)
-        //        {
-                    
-        //            titleBox.Focus();
-        //            titleBox.SelectAll();
-        //            UpdateLayout();
-        //            Debug.WriteLine("set focus");
-        //        }
-        //    }
-        //}
+        private void RefreshCollectionViewSource()
+        {
+            GetCollectionView().Refresh();
+        }
 
         private Books GetBooks()  {
             return (Books)this.Resources["books"]; ;
@@ -341,6 +327,46 @@ namespace FantasticFictionParser
 
         private void filterEntry_TextChanged(object sender, TextChangedEventArgs e)
         {
+            RefreshCollectionViewSource();
+        }
+
+        private void SetRead(object sender, RoutedEventArgs e)
+        {
+              ICollection<Book> selectedBooks = bookGrid.SelectedItems.Cast<Book>().ToList();
+              foreach (Book book in selectedBooks)
+              {
+                  book.isRead = true;
+              }
+              RefreshCollectionViewSource();
+        }
+
+        private void SetUnread(object sender, RoutedEventArgs e)
+        {
+            ICollection<Book> selectedBooks = bookGrid.SelectedItems.Cast<Book>().ToList();
+            foreach (Book book in selectedBooks)
+            {
+                book.isRead = false;
+            }
+            RefreshCollectionViewSource();
+        }
+
+        private void SetFavorite(object sender, RoutedEventArgs e)
+        {
+            ICollection<Book> selectedBooks = bookGrid.SelectedItems.Cast<Book>().ToList();
+            foreach (Book book in selectedBooks)
+            {
+                book.isFavorite = true;
+            }
+            RefreshCollectionViewSource();
+        }
+
+        private void RemoveFavorite(object sender, RoutedEventArgs e)
+        {
+            ICollection<Book> selectedBooks = bookGrid.SelectedItems.Cast<Book>().ToList();
+            foreach (Book book in selectedBooks)
+            {
+                book.isFavorite = false;
+            }
             RefreshCollectionViewSource();
         }
 
