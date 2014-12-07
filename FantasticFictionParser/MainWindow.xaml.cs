@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -25,7 +26,7 @@ namespace FantasticFictionParser
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ObservableCollection<Book> books = new ObservableCollection<Book>(new HashSet<Book>());
+        private ICollection<Book> books;
         private ISet<Book> removedBooks = new HashSet<Book>();
         private ExcelStorage excel;
 
@@ -33,7 +34,6 @@ namespace FantasticFictionParser
         {
             InitializeComponent();
             excel = new ExcelStorage();
-            bookGrid.DataContext = books;
         }
 
         private void SearchBook_Click(object sender, RoutedEventArgs e)
@@ -84,7 +84,7 @@ namespace FantasticFictionParser
 
         private List<Book> mapBooks(List<Hit> hits)
         {
-            List<Book> books = hits.Select(item => new Book()
+            List<Book> foundBooks = hits.Select(item => new Book()
             {
                 hasImage = "y".Equals(item.Hasimage) ? true : false,
                 imageLoc = new Uri("http://img1.fantasticfiction.co.uk/thumbs/"+ item.Imageloc),
@@ -96,28 +96,19 @@ namespace FantasticFictionParser
                 authorUrl = new Uri("http://www.fantasticfiction.co.uk/"+item.AuthorUrl),
                 authorName = item.AuthorName
             }).ToList();
-            return books;
+            return foundBooks;
         }
 
-        private void Window_Activated(object sender, EventArgs e)
-        {
-            titleBox.Focus();
-        }
+        //private void Window_Activated(object sender, EventArgs e)
+        //{
+        //    titleBox.Focus();
+        //}
 
 
         private void DataGrid_Hyperlink_Click(object sender, RoutedEventArgs e)
         {
             Hyperlink link = (Hyperlink)e.OriginalSource;
             Process.Start(link.NavigateUri.AbsoluteUri);
-        }
-
-        private void addButton_Click(object sender, RoutedEventArgs e)
-        {
-            List<Book> selectedBooks = resultGrid.SelectedItems.Cast<Book>().ToList();
-            foreach (var book in selectedBooks)
-	        {
-                books.Add(book);
-        	}
         }
 
         private void saveMyBooks_Click(object sender, RoutedEventArgs e)
@@ -158,12 +149,14 @@ namespace FantasticFictionParser
             DataGrid grid = sender as DataGrid;
 
             Book book = (Book)grid.SelectedItem;
-            books.Add(book);
-            statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
+            AddBook(book);
         }
 
         private void LoadMyBooks()
         {
+            books = GetBooks();
+            books.Clear();
+
             string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             FileInfo file = new FileInfo(path + @"\FFLoader\books.json");
             if (!file.Exists)
@@ -175,8 +168,11 @@ namespace FantasticFictionParser
             using (JsonReader jw = new JsonTextReader(sw))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                books = new ObservableCollection<Book>(new HashSet<Book>(serializer.Deserialize<ISet<Book>>(jw)));
-                bookGrid.DataContext = books;
+                ICollection<Book> loaded = new HashSet<Book>(serializer.Deserialize<ISet<Book>>(jw));
+                foreach (Book book in loaded)
+                {
+                    books.Add(book);
+                }
             }
             statusBarLeft.Content = string.Format("{0} books in library.", books.Count);
         }
@@ -237,14 +233,26 @@ namespace FantasticFictionParser
                 DataGrid grid = sender as DataGrid;
 
                 Book book = (Book)grid.SelectedItem;
-                books.Add(book);
-                statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
+                AddBook(book);
             }
             if (e.Key == Key.Tab)
             {
                 titleBox.Focus();
                 titleBox.SelectAll();
                 UpdateLayout();
+            }
+        }
+
+        private void AddBook(Book book)
+        {
+            if (books.Contains(book))
+            {
+                statusBarLeft.Content = string.Format("'{0}' already in library.", book.title);
+            }
+            else
+            {
+                books.Add(book);
+                statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
             }
         }
 
@@ -263,6 +271,12 @@ namespace FantasticFictionParser
             titleBox.SelectAll();
         }
 
+        private void RefreshCollectionViewSource()
+        {
+            ICollectionView view = CollectionViewSource.GetDefaultView(bookGrid.ItemsSource);
+            view.Refresh();
+        }
+
         //private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         //{
         //    if (e.Source is TabControl)
@@ -277,6 +291,58 @@ namespace FantasticFictionParser
         //        }
         //    }
         //}
+
+        private Books GetBooks()  {
+            return (Books)this.Resources["books"]; ;
+        }
+
+        private void CollectionViewSource_Filter(object sender, FilterEventArgs e)
+        {
+            Book book = e.Item as Book;
+            if (book != null)
+            // If filter is turned on, filter completed items.
+            {
+                if (titleFilterEntry.Text != null)
+                {
+                    if (book.title != null && book.title.IndexOf(titleFilterEntry.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        e.Accepted = true;
+                    }
+                    else {
+                        e.Accepted = false;
+                    }
+                }
+                if (!e.Accepted) return; 
+                if (authorFilterEntry.Text != null)
+                {
+                    if (book.authorName != null && book.authorName.IndexOf(authorFilterEntry.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        e.Accepted = true;
+                    }
+                    else
+                    {
+                        e.Accepted = false;
+                    }
+                }
+                if (!e.Accepted) return;
+                if (seriesFilterEntry.Text != null)
+                {
+                    if (book.seriesName != null && book.seriesName.IndexOf(seriesFilterEntry.Text, StringComparison.OrdinalIgnoreCase) >= 0)
+                    {
+                        e.Accepted = true;
+                    }
+                    else
+                    {
+                        e.Accepted = false;
+                    }
+                }
+            }
+        }
+
+        private void filterEntry_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            RefreshCollectionViewSource();
+        }
 
     }
 }
