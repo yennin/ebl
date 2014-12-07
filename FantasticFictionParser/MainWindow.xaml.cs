@@ -240,6 +240,12 @@ namespace FantasticFictionParser
                 books.Add(book);
                 statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
             }
+            if (e.Key == Key.Tab)
+            {
+                titleBox.Focus();
+                titleBox.SelectAll();
+                UpdateLayout();
+            }
         }
 
         private void booksTab_GotFocus(object sender, RoutedEventArgs e)

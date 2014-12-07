@@ -7,10 +7,10 @@
         <TabControl x:Name="tabs" Margin="0,0,0,33">
             <TabItem x:Name="searchTab" Header="Search">
                 <Grid Background="#FFE5E5E5" Margin="0">
-                    <Button x:Name="SearchBook" Content="Search Book" Margin="0,4,4,0" VerticalAlignment="Top" IsDefault="True" Click="SearchBook_Click" Width="92" Height="23" MinWidth="92" MinHeight="23" MaxWidth="92" MaxHeight="23" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Right" ClipToBounds="True" SnapsToDevicePixels="True"/>
-                    <TextBox x:Name="titleBox" Height="23" Margin="70,4,101,0" TextWrapping="Wrap" VerticalAlignment="Top" GotKeyboardFocus="titleBox_GotKeyboardFocus" GotMouseCapture="titleBox_GotMouseCapture"/>
+                    <Button x:Name="SearchBook" Content="Search Book" Margin="0,4,4,0" VerticalAlignment="Top" IsDefault="True" Click="SearchBook_Click" Width="92" Height="23" MinWidth="92" MinHeight="23" MaxWidth="92" MaxHeight="23" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Right" ClipToBounds="True" SnapsToDevicePixels="True" TabIndex="7"/>
+                    <TextBox x:Name="titleBox" Height="23" Margin="70,4,101,0" TextWrapping="Wrap" VerticalAlignment="Top" GotKeyboardFocus="titleBox_GotKeyboardFocus" GotMouseCapture="titleBox_GotMouseCapture" TabIndex="2"/>
                     <Label Content="Book Title" HorizontalAlignment="Left" Margin="4,4,0,0" VerticalAlignment="Top"/>
-                    <DataGrid x:Name="resultGrid" Margin="4,32,4,4" IsReadOnly="True" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" AlternatingRowBackground="#FFCCCCCC" RowBackground="#FFDDDDDD" ItemsSource="{Binding}" AutoGenerateColumns="False" Padding="0" MouseDoubleClick="resultGrid_MouseDoubleClick" PreviewKeyDown="resultGrid_PreviewKeyDown">
+                    <DataGrid x:Name="resultGrid" Margin="4,32,4,4" IsReadOnly="True" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" AlternatingRowBackground="#FFCCCCCC" RowBackground="#FFDDDDDD" ItemsSource="{Binding}" AutoGenerateColumns="False" Padding="0" MouseDoubleClick="resultGrid_MouseDoubleClick" PreviewKeyDown="resultGrid_PreviewKeyDown" TabIndex="1">
                         <DataGrid.CellStyle>
                             <Style TargetType="{x:Type DataGridCell}">
                                 <Setter Property="Padding" Value="2"/>
@@ -60,7 +60,7 @@
                         <ColumnDefinition Width="25*"/>
                         <ColumnDefinition Width="1012*"/>
                     </Grid.ColumnDefinitions>
-                    <DataGrid x:Name="bookGrid" Margin="0,32,4,4" IsReadOnly="True" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" AlternatingRowBackground="#FFCCCCCC" RowBackground="#FFDDDDDD" ItemsSource="{Binding}" AutoGenerateColumns="False" Padding="0" MouseDoubleClick="bookGrid_MouseDoubleClick" Grid.ColumnSpan="2">
+                    <DataGrid x:Name="bookGrid" Margin="0,32,4,4" IsReadOnly="False" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" AlternatingRowBackground="#FFCCCCCC" RowBackground="#FFDDDDDD" ItemsSource="{Binding}" AutoGenerateColumns="False" Padding="0" MouseDoubleClick="bookGrid_MouseDoubleClick" Grid.ColumnSpan="2" TabIndex="6">
                         <DataGrid.CellStyle>
                             <Style TargetType="{x:Type DataGridCell}">
                                 <Setter Property="Padding" Value="2"/>
@@ -83,7 +83,7 @@
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
-                            <DataGridHyperlinkColumn Header="Title"  Binding="{Binding pfn}" ContentBinding="{Binding title}" Width="3*" SortMemberPath="title">
+                            <DataGridHyperlinkColumn Header="Title"  Binding="{Binding pfn}" ContentBinding="{Binding title}" Width="2*" SortMemberPath="title">
                                 <DataGridHyperlinkColumn.ElementStyle>
                                     <Style>
                                         <EventSetter Event="Hyperlink.Click" Handler="DataGrid_Hyperlink_Click"/>
@@ -100,11 +100,14 @@
                             <DataGridTextColumn Header="Year" Binding="{Binding year}" Width="50" />
                             <DataGridTextColumn Header="Series" Binding="{Binding seriesName}" Width="2*" />
                             <DataGridTextColumn Header="No."  Binding="{Binding seriesNumber}" Width="30" CanUserResize="False" />
+                            <DataGridCheckBoxColumn Header="Read"  Binding="{Binding isRead}" Width="37" CanUserResize="False" />
+                            <DataGridCheckBoxColumn Header="Fav"  Binding="{Binding isFavorite}" Width="30" CanUserResize="False" />
+                            <DataGridTextColumn Header="Lent To"  Binding="{Binding lentTo}" Width="*" CanUserResize="False" />
                         </DataGrid.Columns>
                     </DataGrid>
-                    <Button x:Name="saveMyBooks" Content="Export To Excel" HorizontalAlignment="Right" Margin="0,4,4,0" VerticalAlignment="Top" Width="94" Height="23" Click="saveMyBooks_Click" RenderTransformOrigin="-3.574,-24.391" Grid.Column="1"/>
-                    <Button x:Name="restore" Content="Restore" Grid.Column="1" HorizontalAlignment="Right" Margin="0,4,103,0" VerticalAlignment="Top" Width="75" Height="23" Click="restore_Click"/>
-                    <Button x:Name="saveButton" Content="Save" Grid.Column="1" HorizontalAlignment="Right" Margin="0,4,183,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.293,0.25" Height="23" Click="saveButton_Click"/>
+                    <Button x:Name="saveMyBooks" Content="Export To Excel" HorizontalAlignment="Right" Margin="0,4,4,0" VerticalAlignment="Top" Width="94" Height="23" Click="saveMyBooks_Click" RenderTransformOrigin="-3.574,-24.391" Grid.Column="1" TabIndex="5"/>
+                    <Button x:Name="restore" Content="Restore" Grid.Column="1" HorizontalAlignment="Right" Margin="0,4,103,0" VerticalAlignment="Top" Width="75" Height="23" Click="restore_Click" TabIndex="4"/>
+                    <Button x:Name="saveButton" Content="Save" Grid.Column="1" HorizontalAlignment="Right" Margin="0,4,183,0" VerticalAlignment="Top" Width="75" RenderTransformOrigin="0.293,0.25" Height="23" Click="saveButton_Click" TabIndex="3"/>
                 </Grid>
             </TabItem>
         </TabControl>

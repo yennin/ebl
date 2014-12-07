@@ -17,6 +17,9 @@ namespace FantasticFictionParser
         public Uri authorUrl { get; set; }
         public string authorName { get; set; }
         public int year { get; set; }
+        public bool isRead { get; set; }
+        public bool isFavorite { get; set; }
+        public string lentTo { get; set; }
 
         // override object.Equals
         public override bool Equals(object obj)
