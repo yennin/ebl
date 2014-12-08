@@ -37,7 +37,10 @@ namespace FantasticFictionParser.Storage
             ws.Cells["D1"].Value = "Year";
             ws.Cells["E1"].Value = "Series";
             ws.Cells["F1"].Value = "Sequence";
-            ws.Cells["A1:F1"].Style.Font.Bold = true;
+            ws.Cells["G1"].Value = "Read";
+            ws.Cells["H1"].Value = "Favorite";
+            ws.Cells["I1"].Value = "Lent To";
+            ws.Cells["A1:I1"].Style.Font.Bold = true;
 
             // dimensions for picture column
             ws.Column(1).Width = 14.30D;
@@ -45,13 +48,6 @@ namespace FantasticFictionParser.Storage
             {
                 ws.Row(i).Height = 109.00D;
             }
-
-            //ws.Column(2).Width = 60.00D;
-            //ws.Column(3).Width = 30.00D;
-            //ws.Column(4).Width = 6.00D;
-            //ws.Column(5).Width = 30.00D;
-            //ws.Column(6).Width = 10.00D;
-
         }
 
         public void AddRow(Book book)
@@ -65,6 +61,9 @@ namespace FantasticFictionParser.Storage
             ws.Cells[currentRow, 5].Value = book.seriesName; 
             ws.Cells[currentRow, 6].Value = book.seriesNumber;
             ws.Cells[currentRow, 6].Style.Numberformat.Format = "0";
+            ws.Cells[currentRow, 7].Value = book.isRead ? "Yes" : null;
+            ws.Cells[currentRow, 8].Value = book.isFavorite ? "Yes" : null;
+            ws.Cells[currentRow, 9].Value = book.lentTo;
             currentRow++;
         }
 
@@ -108,6 +107,9 @@ namespace FantasticFictionParser.Storage
             ws.Column(4).AutoFit();
             ws.Column(5).AutoFit();
             ws.Column(6).AutoFit();
+            ws.Column(7).AutoFit();
+            ws.Column(8).AutoFit();
+            ws.Column(9).AutoFit();
             pck.SaveAs(file);
         }
 
