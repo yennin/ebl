@@ -1,24 +1,18 @@
-﻿using Newtonsoft.Json;
+﻿using FantasticFictionParser.Ffsearch;
+using FantasticFictionParser.Model;
+using FantasticFictionParser.Storage;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
 using System.Media;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+using System.Linq;
 
 namespace FantasticFictionParser
 {
@@ -27,118 +21,41 @@ namespace FantasticFictionParser
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ICollection<Book> books;
         private ISet<Book> removedBooks = new HashSet<Book>();
         private ExcelStorage excel;
+        private ILocalStorage storage;
 
         public MainWindow()
         {
             InitializeComponent();
             excel = new ExcelStorage();
+            storage = new JsonLocalStorage((Books)this.Resources["books"]);
+            storage.LoadBooks();
+            statusBarLeft.Content = string.Format("{0} books in library.", storage.Count());
         }
 
-        private void SearchBook_Click(object sender, RoutedEventArgs e)
-        {
-            string urlAddress = "http://www.fantasticfiction.co.uk/db-search/v4/books/?start=0&size=50&return-fields=booktype,title,year,pfn,hasimage,authorsinfo,seriesinfo,db,imageloc&q=";
-            string bookName = WebUtility.UrlEncode( titleBox.Text );
-
-           
-
-            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(urlAddress+bookName);
-            HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-
-            if (response.StatusCode == HttpStatusCode.OK)
-            {
-                Stream receiveStream = response.GetResponseStream();
-                StreamReader readStream = null;
-
-                readStream = new StreamReader(receiveStream);
-
-                string data = readStream.ReadToEnd();
-                response.Close();
-                readStream.Close();
-
-                int start = data.IndexOf("{");
-                int end = data.LastIndexOf("}");
-                if (start < 0 || end < 0)
-                {
-                    statusBarLeft.Content = "No results.";
-                    SystemSounds.Exclamation.Play();
-                    return;
-                }
-                data = data.Substring(start, end - start + 1);
-                
-
-
-                SearchResult result = JsonConvert.DeserializeObject<SearchResult>(data);
-                if (result.hits.found > 0)
-                {
-                    ObservableCollection<Book> foundBooks = new ObservableCollection<Book>(mapBooks(result.hits.hit));
-                    resultGrid.DataContext = foundBooks;
-                    statusBarLeft.Content = string.Format("Showing {0} of {1} books.", foundBooks.Count, result.hits.found);
-                }
-                else
-                {
-                    statusBarLeft.Content = "No results.";
-                    SystemSounds.Exclamation.Play();
-                }
-            }
-        }
-
-        private List<Book> mapBooks(List<Hit> hits)
-        {
-            List<Book> foundBooks = hits.Select(item => new Book()
-            {
-                hasImage = "y".Equals(item.Hasimage) ? true : false,
-                imageLoc = new Uri("http://img1.fantasticfiction.co.uk/thumbs/"+ item.Imageloc),
-                pfn = new Uri( "http://www.fantasticfiction.co.uk/"+ item.Pfn),
-                seriesName = item.SeriesName,
-                seriesNumber = item.SeriesNumber,
-                title = item.Title,
-                year = int.Parse(item.Year),
-                authorUrl = new Uri("http://www.fantasticfiction.co.uk/"+item.AuthorUrl),
-                authorName = item.AuthorName
-            }).ToList();
-            return foundBooks;
-        }
-
+        #region Common Event Handlers
         private void DataGrid_Hyperlink_Click(object sender, RoutedEventArgs e)
         {
             Hyperlink link = (Hyperlink)e.OriginalSource;
             Process.Start(link.NavigateUri.AbsoluteUri);
         }
+        #endregion
 
-        private void saveMyBooks_Click(object sender, RoutedEventArgs e)
+        #region Search Tab Event Handlers
+        private void SearchBook_Click(object sender, RoutedEventArgs e)
         {
-            // Configure save file dialog box
-            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
-            dlg.FileName = "Books"; // Default file name
-            dlg.DefaultExt = ".xlsx"; // Default file extension
-            dlg.Filter = "Excel Document (.xlsx)|*.xlsx"; // Filter files by extension
-
-            // Show save file dialog box
-            Nullable<bool> result = dlg.ShowDialog();
-
-            // Process save file dialog box results
-            if (result == true)
+            SearchStatus result = FFSearch.SearchBooks(titleBox.Text);
+            if (result.hasResults)
             {
-                Mouse.OverrideCursor = Cursors.Wait;
-                try
-                {
-                    // Save document
-                    string filename = dlg.FileName;
-                    foreach (Book book in books)
-                    {
-                        excel.AddRow(book);
-                    }
-                    excel.Save(filename);
-                }
-                finally
-                {
-                    Mouse.OverrideCursor = null;
-                }
+                resultGrid.DataContext = new ObservableCollection<Book>(result.books); ;
+                statusBarLeft.Content = string.Format("Showing {0} of {1} books.", result.availableResults, result.totalResults);
             }
-
+            else
+            {
+                statusBarLeft.Content = "No results.";
+                SystemSounds.Exclamation.Play();
+            }
         }
 
         private void resultGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
@@ -147,79 +64,6 @@ namespace FantasticFictionParser
 
             Book book = (Book)grid.SelectedItem;
             AddBook(book);
-        }
-
-        private void LoadMyBooks()
-        {
-            books = GetBooks();
-            books.Clear();
-
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            FileInfo file = new FileInfo(path + @"\FFLoader\books.json");
-            if (!file.Exists)
-            {
-                return;
-            }
-            using (FileStream fs = File.Open(path + @"\FFLoader\books.json", FileMode.Open))
-            using (StreamReader sw = new StreamReader(fs))
-            using (JsonReader jw = new JsonTextReader(sw))
-            {
-                JsonSerializer serializer = new JsonSerializer();
-                ICollection<Book> loaded = new HashSet<Book>(serializer.Deserialize<ISet<Book>>(jw));
-                foreach (Book book in loaded)
-                {
-                    books.Add(book);
-                }
-            }
-            statusBarLeft.Content = string.Format("{0} books in library.", books.Count);
-        }
-
-        private void StoreMyBooks()
-        {
-            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            if (!Directory.Exists(path + @"\FFLoader")){
-                Directory.CreateDirectory(path + @"\FFLoader");
-            }
-            using (FileStream fs = File.Open(path + @"\FFLoader\books.json", FileMode.Create))
-            using (StreamWriter sw = new StreamWriter(fs))
-            using (JsonWriter jw = new JsonTextWriter(sw))
-            {
-                jw.Formatting = Formatting.Indented;
-
-                JsonSerializer serializer = new JsonSerializer();
-                serializer.Serialize(jw, books);
-            }
-        }
-
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            StoreMyBooks();
-        }
-
-        private void Window_Initialized(object sender, EventArgs e)
-        {
-            LoadMyBooks();
-        }
-
-        private void bookGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            DataGrid grid = sender as DataGrid;
-
-            Book book = (Book)grid.SelectedItem;
-            books.Remove(book);
-            statusBarLeft.Content = string.Format("'{0}' removed to library.", book.title);
-        }
-
-        private void restore_Click(object sender, RoutedEventArgs e)
-        {
-            LoadMyBooks();
-            statusBarLeft.Content = string.Format("Books restored from local storage.");
-        }
-
-        private void saveButton_Click(object sender, RoutedEventArgs e)
-        {
-            StoreMyBooks();
-            statusBarLeft.Content = string.Format("Books saved to local storage.");
         }
 
         private void resultGrid_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -242,32 +86,78 @@ namespace FantasticFictionParser
 
         private void AddBook(Book book)
         {
-            if (books.Contains(book))
+            if (storage.AddBook(book))
             {
-                statusBarLeft.Content = string.Format("'{0}' already in library.", book.title);
+                statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
             }
             else
             {
-                books.Add(book);
-                statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
+                statusBarLeft.Content = string.Format("'{0}' already in library.", book.title);
             }
+        }
+        #endregion
+
+        #region Book Tab Event Handlers
+        private void saveMyBooks_Click(object sender, RoutedEventArgs e)
+        {
+            // Configure save file dialog box
+            Microsoft.Win32.SaveFileDialog dlg = new Microsoft.Win32.SaveFileDialog();
+            dlg.FileName = "Books"; // Default file name
+            dlg.DefaultExt = ".xlsx"; // Default file extension
+            dlg.Filter = "Excel Document (.xlsx)|*.xlsx"; // Filter files by extension
+
+            // Show save file dialog box
+            Nullable<bool> result = dlg.ShowDialog();
+
+            // Process save file dialog box results
+            if (result == true)
+            {
+                Mouse.OverrideCursor = Cursors.Wait;
+                try
+                {
+                    // Save document
+                    string filename = dlg.FileName;
+                    foreach (Book book in storage.GetBooks())
+                    {
+                        excel.AddRow(book);
+                    }
+                    excel.Save(filename);
+                }
+                finally
+                {
+                    Mouse.OverrideCursor = null;
+                }
+            }
+
+        }
+
+        private void restore_Click(object sender, RoutedEventArgs e)
+        {
+            storage.LoadBooks();
+            statusBarLeft.Content = string.Format("Books restored from local storage.");
+        }
+
+        private void saveButton_Click(object sender, RoutedEventArgs e)
+        {
+            storage.StoreBooks();
+            statusBarLeft.Content = string.Format("Books saved to local storage.");
         }
 
         private void booksTab_GotFocus(object sender, RoutedEventArgs e)
         {
-            statusBarLeft.Content = string.Format("{0} books in library.", books.Count);
+            statusBarLeft.Content = string.Format("{0} books in library.", storage.Count());
         }
 
-        private void titleBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        #endregion
+
+        #region Window Events
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            titleBox.SelectAll();
+            storage.StoreBooks();
         }
+        #endregion
 
-        private void titleBox_GotMouseCapture(object sender, MouseEventArgs e)
-        {
-            titleBox.SelectAll();
-        }
-
+        #region Collection View Helper
         private ICollectionView GetCollectionView()
         {
             return CollectionViewSource.GetDefaultView(bookGrid.ItemsSource);
@@ -277,9 +167,16 @@ namespace FantasticFictionParser
         {
             GetCollectionView().Refresh();
         }
+        #endregion
 
-        private Books GetBooks()  {
-            return (Books)this.Resources["books"]; ;
+        #region BookGrid Functionality
+        private void bookGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            DataGrid grid = sender as DataGrid;
+
+            Book book = (Book)grid.SelectedItem;
+            storage.RemoveBook(book);
+            statusBarLeft.Content = string.Format("'{0}' removed to library.", book.title);
         }
 
         private void CollectionViewSource_Filter(object sender, FilterEventArgs e)
@@ -288,18 +185,19 @@ namespace FantasticFictionParser
             if (book != null)
             // If filter is turned on, filter completed items.
             {
-                if (titleFilterEntry.Text != null)
+                if (!string.IsNullOrWhiteSpace(titleFilterEntry.Text))
                 {
                     if (book.title != null && book.title.IndexOf(titleFilterEntry.Text, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
                         e.Accepted = true;
                     }
-                    else {
+                    else
+                    {
                         e.Accepted = false;
                     }
                 }
-                if (!e.Accepted) return; 
-                if (authorFilterEntry.Text != null)
+                if (!e.Accepted) return;
+                if (!string.IsNullOrWhiteSpace(authorFilterEntry.Text))
                 {
                     if (book.authorName != null && book.authorName.IndexOf(authorFilterEntry.Text, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
@@ -311,7 +209,7 @@ namespace FantasticFictionParser
                     }
                 }
                 if (!e.Accepted) return;
-                if (seriesFilterEntry.Text != null)
+                if (!string.IsNullOrWhiteSpace(seriesFilterEntry.Text))
                 {
                     if (book.seriesName != null && book.seriesName.IndexOf(seriesFilterEntry.Text, StringComparison.OrdinalIgnoreCase) >= 0)
                     {
@@ -332,12 +230,12 @@ namespace FantasticFictionParser
 
         private void SetRead(object sender, RoutedEventArgs e)
         {
-              ICollection<Book> selectedBooks = bookGrid.SelectedItems.Cast<Book>().ToList();
-              foreach (Book book in selectedBooks)
-              {
-                  book.isRead = true;
-              }
-              RefreshCollectionViewSource();
+            ICollection<Book> selectedBooks = bookGrid.SelectedItems.Cast<Book>().ToList();
+            foreach (Book book in selectedBooks)
+            {
+                book.isRead = true;
+            }
+            RefreshCollectionViewSource();
         }
 
         private void SetUnread(object sender, RoutedEventArgs e)
@@ -369,6 +267,8 @@ namespace FantasticFictionParser
             }
             RefreshCollectionViewSource();
         }
+        #endregion
+
 
     }
 }

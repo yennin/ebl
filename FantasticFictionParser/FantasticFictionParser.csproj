@@ -120,7 +120,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="TextInputToVisibilityConverter.cs" />
+    <Compile Include="Storage\ILocalStorage.cs" />
+    <Compile Include="Storage\JsonLocalStorage.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -129,14 +130,16 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Books.cs" />
-    <Compile Include="ExcelStorage.cs" />
-    <Compile Include="Data.cs" />
-    <Compile Include="Book.cs" />
-    <Compile Include="Hit.cs" />
-    <Compile Include="Hits.cs" />
-    <Compile Include="SearchResult.cs" />
-    <Compile Include="Info.cs" />
+    <Compile Include="Ffsearch\FFSearch.cs" />
+    <Compile Include="Ffsearch\SearchStatus.cs" />
+    <Compile Include="Model\Books.cs" />
+    <Compile Include="Storage\ExcelStorage.cs" />
+    <Compile Include="Ffsearch\Data.cs" />
+    <Compile Include="Model\Book.cs" />
+    <Compile Include="Ffsearch\Hit.cs" />
+    <Compile Include="Ffsearch\Hits.cs" />
+    <Compile Include="Ffsearch\SearchResult.cs" />
+    <Compile Include="Ffsearch\Info.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

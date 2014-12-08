@@ -9,8 +9,9 @@ using System.Drawing;
 using System.Net;
 using System.Windows;
 using OfficeOpenXml.Drawing;
+using FantasticFictionParser.Model;
 
-namespace FantasticFictionParser
+namespace FantasticFictionParser.Storage
 {
     class ExcelStorage
     {
@@ -85,9 +86,6 @@ namespace FantasticFictionParser
             ExcelPicture pic = ws.Drawings.AddPicture("pic" + (row).ToString(), image);
             pic.SetPosition(row-1, 0, column-1, 0);
         }
-
-
-
 
         public void Save(string filename)
         {

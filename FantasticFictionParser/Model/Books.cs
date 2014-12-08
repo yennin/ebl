@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace FantasticFictionParser
+namespace FantasticFictionParser.Model
 {
     class Books : ObservableCollection<Book>
     {

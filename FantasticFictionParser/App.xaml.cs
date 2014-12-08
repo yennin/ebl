@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -23,9 +24,14 @@ namespace FantasticFictionParser
                 String resourceName = "FantasticFictionParser." +
                    new AssemblyName(args.Name).Name + ".dll";
 
-
-                return LoadAssemply(resourceName);
-
+                if (resourceName.EndsWith("resources.dll"))
+                {
+                    return null;
+                }
+                else
+                {
+                    return LoadAssemply(resourceName);
+                }
             };
         }
 
@@ -33,7 +39,11 @@ namespace FantasticFictionParser
         {
             using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName))
             {
-
+                if (stream == null)
+                {
+                    Debug.WriteLine(string.Format("Library {0} not found.", resourceName));
+                    return null;
+                }
                 Byte[] assemblyData = new Byte[stream.Length];
 
                 stream.Read(assemblyData, 0, assemblyData.Length);
