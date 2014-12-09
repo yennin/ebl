@@ -10,6 +10,7 @@ namespace FantasticFictionParser.Model
     {
         public Boolean hasImage { get; set; }
         public Uri imageLoc { get; set; }
+        public byte[] image { get; set; }
         public Uri pfn { get; set; }
         public string seriesName { get; set; }
         public string seriesNumber { get; set; }

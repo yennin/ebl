@@ -3,6 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
         xmlns:local="clr-namespace:FantasticFictionParser.Model" 
+        xmlns:storage="clr-namespace:FantasticFictionParser.Storage"
         x:Class="FantasticFictionParser.MainWindow"
         Title="Fantastic Fiction Book Search" Height="755.1" Width="1071" Closing="Window_Closing">
     <Window.Resources>
@@ -67,6 +68,9 @@
                         <ColumnDefinition Width="1012*"/>
                     </Grid.ColumnDefinitions>
                     <DataGrid x:Name="bookGrid" Margin="0,32,4,4" IsReadOnly="False" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" ItemsSource="{Binding Source={StaticResource cBooks}}" AutoGenerateColumns="False" Padding="0" Grid.ColumnSpan="2" TabIndex="1" PreviewMouseRightButtonUp="bookGrid_PreviewMouseRightButtonUp">
+                        <DataGrid.Resources>
+                            <storage:ImageConverter x:Key="imageConverter" />
+                        </DataGrid.Resources>
                         <DataGrid.CellStyle>
                             <Style TargetType="{x:Type DataGridCell}">
                                 <Setter Property="Padding" Value="2"/>
@@ -85,7 +89,7 @@
                             <DataGridTemplateColumn Header="Image" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <Image Source="{Binding imageLoc}"/>
+                                        <Image Source="{Binding image, Converter={StaticResource imageConverter}}"/>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>

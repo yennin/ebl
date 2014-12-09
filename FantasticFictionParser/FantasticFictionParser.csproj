@@ -121,6 +121,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Storage\ILocalStorage.cs" />
+    <Compile Include="Storage\ImageConverter.cs" />
     <Compile Include="Storage\JsonLocalStorage.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>

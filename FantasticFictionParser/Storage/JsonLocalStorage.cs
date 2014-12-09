@@ -3,8 +3,11 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -75,6 +78,10 @@ namespace FantasticFictionParser.Storage
             }
             else
             {
+                if (book.image == null)
+                {
+                    book.image = GetImage(book.imageLoc);
+                }
                 books.Add(book);
                 return true;
             }
@@ -95,6 +102,35 @@ namespace FantasticFictionParser.Storage
             return books.Count;
         }
 
+        private byte[] GetImage(Uri url)
+        {
+            HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(url);
+            HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            Stream stream = httpWebReponse.GetResponseStream();
+            Image image = Image.FromStream(stream);
+            stream.Close();
+            return ImageToByte(image, ImageFormat.Jpeg);
+        }
+
+        private byte[] ImageToByte(Image image, ImageFormat format)
+        {
+            using (MemoryStream ms = new MemoryStream())
+            {
+                // Convert Image to byte[]
+                image.Save(ms, format);
+                byte[] imageBytes = ms.ToArray();
+                return imageBytes;
+            }
+        }
+        
+        private Image ByteToImage(byte[] imageBytes)
+        {
+            // Convert byte[] to Image
+            MemoryStream ms = new MemoryStream(imageBytes, 0, imageBytes.Length);
+            ms.Write(imageBytes, 0, imageBytes.Length);
+            Image image = new Bitmap(ms);
+            return image;
+        }
 
     }
 }
