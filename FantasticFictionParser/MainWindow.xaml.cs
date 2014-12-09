@@ -13,6 +13,8 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Linq;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 
 namespace FantasticFictionParser
 {
@@ -24,6 +26,8 @@ namespace FantasticFictionParser
         private ISet<Book> removedBooks = new HashSet<Book>();
         private ExcelStorage excel;
         private ILocalStorage storage;
+        private string tmpFilterValue;
+        private string tmpFilterType;
 
         public MainWindow()
         {
@@ -32,6 +36,7 @@ namespace FantasticFictionParser
             storage = new JsonLocalStorage((Books)this.Resources["books"]);
             storage.LoadBooks();
             statusBarLeft.Content = string.Format("{0} books in library.", storage.Count());
+
         }
 
         #region Common Event Handlers
@@ -170,15 +175,6 @@ namespace FantasticFictionParser
         #endregion
 
         #region BookGrid Functionality
-        private void bookGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            DataGrid grid = sender as DataGrid;
-
-            Book book = (Book)grid.SelectedItem;
-            storage.RemoveBook(book);
-            statusBarLeft.Content = string.Format("'{0}' removed to library.", book.title);
-        }
-
         private void CollectionViewSource_Filter(object sender, FilterEventArgs e)
         {
             Book book = e.Item as Book;
@@ -268,6 +264,84 @@ namespace FantasticFictionParser
             RefreshCollectionViewSource();
         }
         #endregion
+
+        private void RemoveBook(object sender, RoutedEventArgs e)
+        {
+            ICollection<Book> selectedBooks = bookGrid.SelectedItems.Cast<Book>().ToList();
+            foreach (Book book in selectedBooks)
+            {
+                storage.RemoveBook(book);
+                statusBarLeft.Content = string.Format("'{0}' removed to library.", book.title);
+            }
+        }
+
+        private void SetFilter(object sender, RoutedEventArgs e)
+        {
+            if ("Title".Equals(tmpFilterType))
+            {
+                titleFilterEntry.Text = tmpFilterValue;
+            }
+            else if ("Author".Equals(tmpFilterType))
+            {
+                authorFilterEntry.Text = tmpFilterValue;
+            }
+            else if ("Series".Equals(tmpFilterType))
+            {
+                seriesFilterEntry.Text = tmpFilterValue;
+            }
+        }
+
+        private void bookGrid_PreviewMouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            DataGrid grid = (DataGrid)sender;
+            DependencyObject dep = (DependencyObject)e.OriginalSource;
+
+            // iteratively traverse the visual tree
+            while ((dep != null) &&
+                    !(dep is DataGridCell) &&
+                    !(dep is DataGridColumnHeader))
+            {
+                dep = VisualTreeHelper.GetParent(dep);
+            }
+
+            if (dep == null)
+                return;
+
+            //if (dep is DataGridColumnHeader)
+            //{
+            //    DataGridColumnHeader columnHeader = dep as DataGridColumnHeader;
+            //    // do something
+            //}
+
+            if (dep is DataGridCell)
+            {
+                DataGridCell cell = dep as DataGridCell;
+                if ("Title".Equals(cell.Column.Header))
+                {
+                    tmpFilterType = "Title";
+                    Hyperlink link = ((Hyperlink) ((TextBlock)cell.Content).Inlines.FirstInline);
+                    var t = link.Inlines.FirstOrDefault();
+                    tmpFilterValue = ((Book)t.DataContext).title;
+                    Debug.WriteLine(tmpFilterValue);
+                }
+                else if ("Author".Equals(cell.Column.Header))
+                {
+                    tmpFilterType = "Author";
+                    Hyperlink link = ((Hyperlink)((TextBlock)cell.Content).Inlines.FirstInline);
+                    var t = link.Inlines.FirstOrDefault();
+                    tmpFilterValue = ((Book)t.DataContext).authorName;
+                    Debug.WriteLine(tmpFilterValue);
+                }
+                else if ("Series".Equals(cell.Column.Header))
+                {
+                    tmpFilterType = "Series";
+                    tmpFilterValue = ((TextBlock)cell.Content).Text;
+                    Debug.WriteLine(tmpFilterValue);
+                }
+                
+                // do something
+            }
+        }
 
 
     }

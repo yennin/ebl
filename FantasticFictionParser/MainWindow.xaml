@@ -66,7 +66,7 @@
                         <ColumnDefinition Width="25*"/>
                         <ColumnDefinition Width="1012*"/>
                     </Grid.ColumnDefinitions>
-                    <DataGrid x:Name="bookGrid" Margin="0,32,4,4" IsReadOnly="False" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" ItemsSource="{Binding Source={StaticResource cBooks}}" AutoGenerateColumns="False" Padding="0" MouseDoubleClick="bookGrid_MouseDoubleClick" Grid.ColumnSpan="2" TabIndex="1">
+                    <DataGrid x:Name="bookGrid" Margin="0,32,4,4" IsReadOnly="False" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" ItemsSource="{Binding Source={StaticResource cBooks}}" AutoGenerateColumns="False" Padding="0" Grid.ColumnSpan="2" TabIndex="1" PreviewMouseRightButtonUp="bookGrid_PreviewMouseRightButtonUp">
                         <DataGrid.CellStyle>
                             <Style TargetType="{x:Type DataGridCell}">
                                 <Setter Property="Padding" Value="2"/>
@@ -112,10 +112,15 @@
                         </DataGrid.Columns>
                         <DataGrid.ContextMenu>
                             <ContextMenu>
+                                <MenuItem Header="Set Filter"  Click="SetFilter"/>
+                                <Separator />
                                 <MenuItem Header="Set Read" Click="SetRead"/>
                                 <MenuItem Header="Set Unread"  Click="SetUnread"/>
-                                <MenuItem Header="Set as Favorite" Click="SetFavorite"/>
+                                <Separator />
+                                <MenuItem Header="Add to Favorites" Click="SetFavorite"/>
                                 <MenuItem Header="Remove from Favorites"  Click="RemoveFavorite"/>
+                                <Separator />
+                                <MenuItem Header="Remove from Library" Click="RemoveBook"/>
                             </ContextMenu>
                         </DataGrid.ContextMenu>
                     </DataGrid>
