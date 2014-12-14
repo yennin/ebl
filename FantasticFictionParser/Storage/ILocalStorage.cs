@@ -15,5 +15,7 @@ namespace FantasticFictionParser.Storage
         void RemoveBook(Book book);
         IEnumerable<Book> GetBooks();
         int Count();
+        int ReadCount();
+        int EBookCount();
     }
 }

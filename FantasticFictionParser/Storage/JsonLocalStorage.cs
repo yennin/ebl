@@ -102,6 +102,16 @@ namespace FantasticFictionParser.Storage
             return books.Count;
         }
 
+        public int ReadCount()
+        {
+            return books.Count(b => b.isRead);
+        }
+
+        public int EBookCount()
+        {
+            return books.Count(b => b.isEBook);
+        }
+
         private byte[] GetImage(Uri url)
         {
             HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(url);

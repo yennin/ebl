@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:FantasticFictionParser.Model" 
         xmlns:storage="clr-namespace:FantasticFictionParser.Storage"
         x:Class="FantasticFictionParser.MainWindow"
-        Title="Book Library" Height="755.1" Width="1071" Closing="Window_Closing" WindowStartupLocation="CenterOwner">
+        Title="Book Library" Height="755.1" Width="1071" Closing="Window_Closing" WindowStartupLocation="CenterScreen" MinWidth="900">
     <Window.Resources>
         <local:Books x:Key="books" />
         <CollectionViewSource x:Name="booksViewSource" x:Key="cBooks" Source="{StaticResource books}"
@@ -67,7 +67,7 @@
                         <ColumnDefinition Width="25*"/>
                         <ColumnDefinition Width="1012*"/>
                     </Grid.ColumnDefinitions>
-                    <DataGrid x:Name="bookGrid" Margin="0,32,4,4" IsReadOnly="False" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" ItemsSource="{Binding Source={StaticResource cBooks}}" AutoGenerateColumns="False" Padding="0" Grid.ColumnSpan="2" TabIndex="1" PreviewMouseRightButtonUp="bookGrid_PreviewMouseRightButtonUp">
+                    <DataGrid x:Name="bookGrid" Margin="0,32,4,4" IsReadOnly="False" CanUserAddRows="False" RowHeight="140" FontWeight="Bold" ItemsSource="{Binding Source={StaticResource cBooks}}" AutoGenerateColumns="False" Padding="0" Grid.ColumnSpan="2" TabIndex="1" PreviewMouseRightButtonUp="bookGrid_PreviewMouseRightButtonUp" IsTextSearchEnabled="True">
                         <DataGrid.Resources>
                             <storage:ImageConverter x:Key="imageConverter" />
                         </DataGrid.Resources>
@@ -97,24 +97,38 @@
                                 <DataGridHyperlinkColumn.ElementStyle>
                                     <Style>
                                         <EventSetter Event="Hyperlink.Click" Handler="DataGrid_Hyperlink_Click"/>
+                                        <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
                                     </Style>
                                 </DataGridHyperlinkColumn.ElementStyle>
                             </DataGridHyperlinkColumn>
-                            <DataGridHyperlinkColumn Header="Author" Binding="{Binding authorUrl}" ContentBinding="{Binding authorName}" Width="*" SortMemberPath="authorName">
+                            <DataGridHyperlinkColumn Header="Author" Binding="{Binding authorUrl}" ContentBinding="{Binding authorName}" Width="2*" SortMemberPath="authorName">
                                 <DataGridHyperlinkColumn.ElementStyle>
                                     <Style>
                                         <EventSetter Event="Hyperlink.Click" Handler="DataGrid_Hyperlink_Click"/>
+                                        <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
                                     </Style>
                                 </DataGridHyperlinkColumn.ElementStyle>
                             </DataGridHyperlinkColumn>
                             <DataGridTextColumn Header="Year" Binding="{Binding year}" Width="50" />
-                            <DataGridTextColumn Header="Series" Binding="{Binding seriesName}" Width="2*" />
+                            <DataGridTextColumn Header="Series" Binding="{Binding seriesName}" Width="1*" >
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                             <DataGridTextColumn Header="No."  Binding="{Binding seriesNumber}" Width="30" CanUserResize="False" />
                             <DataGridCheckBoxColumn Header="Read"  Binding="{Binding isRead}" Width="37" CanUserResize="False" />
                             <DataGridCheckBoxColumn Header="Fav"  Binding="{Binding isFavorite}" Width="30" CanUserResize="False" />
                             <DataGridCheckBoxColumn Header="Paper"  Binding="{Binding isBook}" Width="43" CanUserResize="False" />
                             <DataGridCheckBoxColumn Header="eBook"  Binding="{Binding isEBook}" Width="47" CanUserResize="False" />
-                            <DataGridTextColumn Header="Comment"  Binding="{Binding comment}" Width="*" CanUserResize="False" />
+                            <DataGridTextColumn Header="Comment"  Binding="{Binding comment}" Width="*" CanUserResize="False" >
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style>
+                                        <Setter Property="TextBlock.TextWrapping" Value="Wrap" />
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
                         </DataGrid.Columns>
                         <DataGrid.ContextMenu>
                             <ContextMenu>
@@ -140,9 +154,20 @@
                 </Grid>
             </TabItem>
         </TabControl>
-        <StatusBar x:Name="statusBar" Height="28" Margin="0" VerticalAlignment="Bottom">
-            <Label x:Name="statusBarLeft" HorizontalAlignment="Left" MinWidth="100" Height="24" Margin="0,2" Padding="5,0"/>
+            <Grid ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="0" VerticalAlignment="Bottom">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="28"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <Label x:Name="statusBarLeft" HorizontalAlignment="Left" MinWidth="100" Height="22" Margin="0,2" Padding="5,0"/>
+                <Label x:Name="statusBarMiddle" HorizontalAlignment="Center" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="1"/>
+                <Label x:Name="statusBarRight" HorizontalAlignment="Right" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="2"/>
+            </Grid>
 
-        </StatusBar>
+        <StackPanel HorizontalAlignment="Left" Height="100" Margin="615,743,0,-129" VerticalAlignment="Top" Width="100"/>
     </Grid>
 </Window>

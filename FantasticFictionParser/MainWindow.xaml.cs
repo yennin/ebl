@@ -36,7 +36,7 @@ namespace FantasticFictionParser
             storage = new JsonLocalStorage((Books)this.Resources["books"]);
             storage.LoadBooks();
             statusBarLeft.Content = string.Format("{0} books in library.", storage.Count());
-
+            SetStatusbarStats();
         }
 
         #region Common Event Handlers
@@ -94,6 +94,7 @@ namespace FantasticFictionParser
             if (storage.AddBook(book))
             {
                 statusBarLeft.Content = string.Format("'{0}' added to library.", book.title);
+                SetStatusbarStats();
             }
             else
             {
@@ -140,6 +141,7 @@ namespace FantasticFictionParser
         {
             storage.LoadBooks();
             statusBarLeft.Content = string.Format("Books restored from local storage.");
+            SetStatusbarStats();
         }
 
         private void saveButton_Click(object sender, RoutedEventArgs e)
@@ -150,7 +152,7 @@ namespace FantasticFictionParser
 
         private void booksTab_GotFocus(object sender, RoutedEventArgs e)
         {
-            statusBarLeft.Content = string.Format("{0} books in library.", storage.Count());
+            SetStatusbarStats();
         }
 
         #endregion
@@ -171,6 +173,7 @@ namespace FantasticFictionParser
         private void RefreshCollectionViewSource()
         {
             GetCollectionView().Refresh();
+            SetStatusbarStats();
         }
         #endregion
 
@@ -265,13 +268,15 @@ namespace FantasticFictionParser
         }
         #endregion
 
+        #region BookGrid Context Menu
         private void RemoveBook(object sender, RoutedEventArgs e)
         {
             ICollection<Book> selectedBooks = bookGrid.SelectedItems.Cast<Book>().ToList();
             foreach (Book book in selectedBooks)
             {
                 storage.RemoveBook(book);
-                statusBarLeft.Content = string.Format("'{0}' removed to library.", book.title);
+                statusBarLeft.Content = string.Format("'{0}' removed from library.", book.title);
+                SetStatusbarStats();
             }
         }
 
@@ -342,7 +347,16 @@ namespace FantasticFictionParser
                 // do something
             }
         }
+        #endregion
 
+        #region Statusbar Statistics
+        private void SetStatusbarStats()
+        {
+            statusBarMiddle.Content = string.Format("{0} books read from library.", storage.ReadCount());
+            statusBarRight.Content = string.Format("{0} eBooks in library.", storage.EBookCount());
 
+        }
+
+        #endregion
     }
 }
