@@ -39,8 +39,10 @@ namespace FantasticFictionParser.Storage
             ws.Cells["F1"].Value = "Sequence";
             ws.Cells["G1"].Value = "Read";
             ws.Cells["H1"].Value = "Favorite";
-            ws.Cells["I1"].Value = "Lent To";
-            ws.Cells["A1:I1"].Style.Font.Bold = true;
+            ws.Cells["I1"].Value = "Paper";
+            ws.Cells["J1"].Value = "eBook";
+            ws.Cells["K1"].Value = "Lent To";
+            ws.Cells["A1:K1"].Style.Font.Bold = true;
 
             // dimensions for picture column
             ws.Column(1).Width = 14.30D;
@@ -63,7 +65,9 @@ namespace FantasticFictionParser.Storage
             ws.Cells[currentRow, 6].Style.Numberformat.Format = "0";
             ws.Cells[currentRow, 7].Value = book.isRead ? "Yes" : null;
             ws.Cells[currentRow, 8].Value = book.isFavorite ? "Yes" : null;
-            ws.Cells[currentRow, 9].Value = book.lentTo;
+            ws.Cells[currentRow, 9].Value = book.isBook ? "Yes" : null;
+            ws.Cells[currentRow, 10].Value = book.isEBook ? "Yes" : null;
+            ws.Cells[currentRow, 11].Value = book.lentTo;
             currentRow++;
         }
 
