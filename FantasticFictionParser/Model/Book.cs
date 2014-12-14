@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +30,15 @@ namespace FantasticFictionParser.Model
         public Book()
         {
             isBook = true;
+        }
+
+        public Image GetImage()
+        {
+            if (image == null) return null;
+            MemoryStream ms = new MemoryStream(image, 0, image.Length);
+            ms.Write(image, 0, image.Length);
+            Image result = new Bitmap(ms);
+            return result;
         }
 
         // override object.Equals

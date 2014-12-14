@@ -122,15 +122,6 @@ namespace FantasticFictionParser.Storage
                 return imageBytes;
             }
         }
-        
-        private Image ByteToImage(byte[] imageBytes)
-        {
-            // Convert byte[] to Image
-            MemoryStream ms = new MemoryStream(imageBytes, 0, imageBytes.Length);
-            ms.Write(imageBytes, 0, imageBytes.Length);
-            Image image = new Bitmap(ms);
-            return image;
-        }
 
     }
 }

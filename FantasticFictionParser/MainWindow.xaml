@@ -5,7 +5,7 @@
         xmlns:local="clr-namespace:FantasticFictionParser.Model" 
         xmlns:storage="clr-namespace:FantasticFictionParser.Storage"
         x:Class="FantasticFictionParser.MainWindow"
-        Title="Fantastic Fiction Book Search" Height="755.1" Width="1071" Closing="Window_Closing">
+        Title="Book Library" Height="755.1" Width="1071" Closing="Window_Closing" WindowStartupLocation="CenterOwner">
     <Window.Resources>
         <local:Books x:Key="books" />
         <CollectionViewSource x:Name="booksViewSource" x:Key="cBooks" Source="{StaticResource books}"

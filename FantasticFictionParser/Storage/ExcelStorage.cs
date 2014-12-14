@@ -53,7 +53,7 @@ namespace FantasticFictionParser.Storage
         public void AddRow(Book book)
         {
 
-            AddPicture(currentRow, 1, book.imageLoc);
+            if (book.image != null) AddPicture(currentRow, 1, book.GetImage());
             AddHyperlink(ws.Cells[currentRow, 2], book.pfn, book.title);
             AddHyperlink(ws.Cells[currentRow, 3], book.authorUrl, book.authorName);
             ws.Cells[currentRow, 4].Value = book.year;
@@ -74,14 +74,9 @@ namespace FantasticFictionParser.Storage
             cell.StyleName = "HyperLink";
         }
 
-        private void AddPicture(int row, int column, Uri url)
+        private void AddPicture(int row, int column, Image image)
         {
-            HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(url);
-            HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            Stream stream = httpWebReponse.GetResponseStream();
-            Image image = Image.FromStream(stream);
             image = ScaleImage(image, 100, 140);
-            stream.Close();
             ExcelPicture pic = ws.Drawings.AddPicture("pic" + (row).ToString(), image);
             pic.SetPosition(row-1, 0, column-1, 0);
         }
