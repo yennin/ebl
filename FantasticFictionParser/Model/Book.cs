@@ -21,6 +21,13 @@ namespace FantasticFictionParser.Model
         public bool isRead { get; set; }
         public bool isFavorite { get; set; }
         public string lentTo { get; set; }
+        public bool isBook { get; set; }
+        public bool isEBook { get; set; }
+
+        public Book()
+        {
+            isBook = true;
+        }
 
         // override object.Equals
         public override bool Equals(object obj)

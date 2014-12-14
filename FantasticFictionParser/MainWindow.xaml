@@ -112,6 +112,8 @@
                             <DataGridTextColumn Header="No."  Binding="{Binding seriesNumber}" Width="30" CanUserResize="False" />
                             <DataGridCheckBoxColumn Header="Read"  Binding="{Binding isRead}" Width="37" CanUserResize="False" />
                             <DataGridCheckBoxColumn Header="Fav"  Binding="{Binding isFavorite}" Width="30" CanUserResize="False" />
+                            <DataGridCheckBoxColumn Header="Paper"  Binding="{Binding isBook}" Width="43" CanUserResize="False" />
+                            <DataGridCheckBoxColumn Header="eBook"  Binding="{Binding isEBook}" Width="47" CanUserResize="False" />
                             <DataGridTextColumn Header="Lent To"  Binding="{Binding lentTo}" Width="*" CanUserResize="False" />
                         </DataGrid.Columns>
                         <DataGrid.ContextMenu>
