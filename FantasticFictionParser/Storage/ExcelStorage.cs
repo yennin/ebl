@@ -67,7 +67,7 @@ namespace FantasticFictionParser.Storage
             ws.Cells[currentRow, 8].Value = book.isFavorite ? "Yes" : null;
             ws.Cells[currentRow, 9].Value = book.isBook ? "Yes" : null;
             ws.Cells[currentRow, 10].Value = book.isEBook ? "Yes" : null;
-            ws.Cells[currentRow, 11].Value = book.lentTo;
+            ws.Cells[currentRow, 11].Value = book.comment;
             currentRow++;
         }
 

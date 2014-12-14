@@ -23,7 +23,7 @@ namespace FantasticFictionParser.Model
         public int year { get; set; }
         public bool isRead { get; set; }
         public bool isFavorite { get; set; }
-        public string lentTo { get; set; }
+        public string comment { get; set; }
         public bool isBook { get; set; }
         public bool isEBook { get; set; }
 
