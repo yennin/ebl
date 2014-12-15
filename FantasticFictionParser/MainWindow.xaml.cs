@@ -15,6 +15,7 @@ using System.Windows.Input;
 using System.Linq;
 using System.Windows.Controls.Primitives;
 using System.Windows.Media;
+using FantasticFictionParser.OAuth2;
 
 namespace FantasticFictionParser
 {
@@ -23,6 +24,12 @@ namespace FantasticFictionParser
     /// </summary>
     public partial class MainWindow : Window
     {
+        public static readonly String ConsumerKey = "13iykjmga9k4kyf";
+        public static readonly String ComsumerSecret = "00imp9517ymqxim";
+        public static readonly String RedirectUrl = "http://localhost/ebl";
+
+        private AccessToken DropboxToken;
+
         private ISet<Book> removedBooks = new HashSet<Book>();
         private ExcelStorage excel;
         private ILocalStorage storage;
@@ -34,6 +41,7 @@ namespace FantasticFictionParser
             InitializeComponent();
             excel = new ExcelStorage();
             storage = new JsonLocalStorage((Books)this.Resources["books"]);
+            DropboxToken = storage.LoadTokens();
             storage.LoadBooks();
             statusBarLeft.Content = string.Format("{0} books in library.", storage.Count());
             SetStatusbarStats();
@@ -358,5 +366,29 @@ namespace FantasticFictionParser
         }
 
         #endregion
+
+        private void dropboxButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (DropboxToken == null || DropboxToken.access_token == null)
+            {
+                WebAuth dialog = new WebAuth(ConsumerKey, ComsumerSecret, RedirectUrl);
+                dialog.Owner = this;
+                bool result = dialog.ShowDialog().GetValueOrDefault();
+                if (result)
+                {
+                    Debug.WriteLine("Authentication successful");
+                    AccessToken code = dialog.GetToken();
+                    storage.StoreTokens(code);
+                }
+                else
+                {
+                    MessageBox.Show("Could not authenticate to Dropbox", "Authentication Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+
+            }
+
+
+
+        }
     }
 }

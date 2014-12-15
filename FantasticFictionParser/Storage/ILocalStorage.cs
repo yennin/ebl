@@ -1,4 +1,5 @@
 ﻿using FantasticFictionParser.Model;
+using FantasticFictionParser.OAuth2;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,5 +18,8 @@ namespace FantasticFictionParser.Storage
         int Count();
         int ReadCount();
         int EBookCount();
+
+        AccessToken LoadTokens();
+        void StoreTokens(AccessToken tokens);
     }
 }

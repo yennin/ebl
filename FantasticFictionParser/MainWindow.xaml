@@ -162,12 +162,14 @@
                     <ColumnDefinition/>
                     <ColumnDefinition/>
                     <ColumnDefinition/>
+                    <ColumnDefinition/>
                 </Grid.ColumnDefinitions>
                 <Label x:Name="statusBarLeft" HorizontalAlignment="Left" MinWidth="100" Height="22" Margin="0,2" Padding="5,0"/>
                 <Label x:Name="statusBarMiddle" HorizontalAlignment="Center" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="1"/>
-                <Label x:Name="statusBarRight" HorizontalAlignment="Right" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="2"/>
-            </Grid>
-
-        <StackPanel HorizontalAlignment="Left" Height="100" Margin="615,743,0,-129" VerticalAlignment="Top" Width="100"/>
+                <Label x:Name="statusBarRight" HorizontalAlignment="Center" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="2"/>
+            <Button x:Name="dropboxButton" HorizontalAlignment="Right" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="3" Click="dropboxButton_Click">
+                Dropbox
+            </Button>
+        </Grid>
     </Grid>
 </Window>

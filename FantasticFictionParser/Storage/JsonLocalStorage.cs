@@ -1,4 +1,5 @@
 ﻿using FantasticFictionParser.Model;
+using FantasticFictionParser.OAuth2;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -15,15 +16,14 @@ namespace FantasticFictionParser.Storage
 {
     class JsonLocalStorage : ILocalStorage
     {
-        private string localPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        private string localAppFolder;
-        private string localStorageFilename;
+        private static string localPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private static string localAppFolder = localPath + @"\FFLoader";
+        private static string localStorageFilename = localPath + @"\FFLoader\books.json";
+        private static string localKeyStorageFilename = localPath + @"\FFLoader\keys.json";
         private readonly ICollection<Book> books;
 
         public JsonLocalStorage(ICollection<Book> books)
         {
-            localAppFolder = localPath + @"\FFLoader";
-            localStorageFilename = localPath + @"\FFLoader\books.json";
             this.books = books;
         }
 
@@ -130,6 +130,32 @@ namespace FantasticFictionParser.Storage
                 image.Save(ms, format);
                 byte[] imageBytes = ms.ToArray();
                 return imageBytes;
+            }
+        }
+
+        public AccessToken LoadTokens()
+        {
+            FileInfo file = new FileInfo(localKeyStorageFilename);
+            if (!file.Exists)
+            {
+                return null;
+            }
+            return JsonConvert.DeserializeObject<AccessToken>(File.ReadAllText(localKeyStorageFilename));
+        }
+
+        public void StoreTokens(AccessToken token)
+        {
+            string path = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            if (!Directory.Exists(localAppFolder))
+            {
+                Directory.CreateDirectory(localAppFolder);
+            }
+            using (FileStream fs = File.Open(localKeyStorageFilename, FileMode.Create))
+            using (StreamWriter sw = new StreamWriter(fs))
+            using (JsonWriter jw = new JsonTextWriter(sw))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(jw, token);
             }
         }
 
