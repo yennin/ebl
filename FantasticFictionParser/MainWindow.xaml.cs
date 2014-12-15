@@ -27,12 +27,6 @@ namespace FantasticFictionParser
     /// </summary>
     public partial class MainWindow : Window
     {
-        public static readonly String ConsumerKey = "13iykjmga9k4kyf";
-        public static readonly String ConsumerSecret = "00imp9517ymqxim";
-        public static readonly String RedirectUrl = "http://localhost/ebl";
-
-        private AccessToken DropboxToken;
-
         private ISet<Book> removedBooks = new HashSet<Book>();
         private ILocalStorage storage;
         private string tmpFilterValue;
@@ -42,7 +36,6 @@ namespace FantasticFictionParser
         {
             InitializeComponent();
             storage = new JsonLocalStorage((Books)this.Resources["books"]);
-            DropboxToken = storage.LoadTokens();
             storage.LoadBooks();
             statusBarLeft.Content = string.Format("{0} books in library.", storage.Count());
             SetStatusbarStats();
@@ -368,76 +361,22 @@ namespace FantasticFictionParser
 
         #endregion
 
+        #region Dropbox integration
         private void dropboxSaveButton_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                storage.StoreBooks();
-                string accessToken = GetDropboxToken();
-                RestClient client = new RestClient("https://api-content.dropbox.com");
-                RestRequest request = new RestRequest("1/files_put/auto/{filename}", Method.PUT);
+            storage.SaveToDropbox();
 
-                // add auth token
-                request.AddParameter(
-                    "Authorization",
-                    string.Format("Bearer {0}", accessToken), ParameterType.HttpHeader);
-
-                FileInfo file = new FileInfo(JsonLocalStorage.localStorageFilename);
-                request.AddUrlSegment("filename", file.Name);
-
-                // add files to upload (works with compatible verbs)
-                request.AddJsonBody(storage.GetBooks());
-
-                IRestResponse<UploadResponse> response2 = client.Execute<UploadResponse>(request);
-                var name = response2.Data.revision;
-                Debug.WriteLine(response2.Data);
-
-            }
-            catch (UnauthorizedAccessException)
-            {
-                // do nothing
-            }
+            statusBarLeft.Content = string.Format("{0} Books stored to Dropbox", storage.Count());
         }
 
         private void dropboxRestoreButton_Click(object sender, RoutedEventArgs e)
         {
-            storage.StoreBooks();
-            string accessToken = GetDropboxToken();
-            RestClient client = new RestClient("https://api-content.dropbox.com");
-            RestRequest request = new RestRequest("1/files/auto/{filename}", Method.GET);
+            storage.RestoreFromDropbox();
 
-            // add auth token
-            request.AddParameter(
-                "Authorization",
-                string.Format("Bearer {0}", accessToken), ParameterType.HttpHeader);
-
-            FileInfo file = new FileInfo(JsonLocalStorage.localStorageFilename);
-            request.AddUrlSegment("filename", file.Name);
-
-            IRestResponse response = client.Execute(request);
-            ICollection<Book> loaded = new HashSet<Book>(JsonConvert.DeserializeObject<ISet<Book>>(response.Content));
-            Debug.WriteLine(loaded.Count);
+            statusBarLeft.Content = string.Format("{0} Books restored from Dropbox.", storage.Count());
+            SetStatusbarStats();
         }
+        #endregion
 
-        private string GetDropboxToken()
-        {
-            if (DropboxToken == null || DropboxToken.access_token == null)
-            {
-                WebAuth dialog = new WebAuth(ConsumerKey, ConsumerSecret, RedirectUrl);
-                dialog.Owner = this;
-                bool result = dialog.ShowDialog().GetValueOrDefault();
-                if (result)
-                {
-                    DropboxToken = dialog.GetToken();
-                    storage.StoreTokens(DropboxToken);
-                }
-                else
-                {
-                    MessageBox.Show("Could not authenticate to Dropbox", "Authentication Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                    throw new UnauthorizedAccessException("Dropbox authentication failed.");
-                }
-            }
-            return DropboxToken.access_token;
-        }
     }
 }
