@@ -60,13 +60,13 @@ namespace FantasticFictionParser.Ffsearch
             List<Book> foundBooks = hits.Select(item => new Book()
             {
                 hasImage = "y".Equals(item.Hasimage) ? true : false,
-                imageLoc = new Uri("http://img1.fantasticfiction.co.uk/thumbs/" + item.Imageloc),
-                pfn = new Uri("http://www.fantasticfiction.co.uk/" + item.Pfn),
+                imageLoc = "http://img1.fantasticfiction.co.uk/thumbs/" + item.Imageloc,
+                pfn = "http://www.fantasticfiction.co.uk/" + item.Pfn,
                 seriesName = item.SeriesName,
                 seriesNumber = item.SeriesNumber,
                 title = item.Title,
                 year = int.Parse(item.Year),
-                authorUrl = new Uri("http://www.fantasticfiction.co.uk/" + item.AuthorUrl),
+                authorUrl = "http://www.fantasticfiction.co.uk/" + item.AuthorUrl,
                 authorName = item.AuthorName
             }).ToList();
             return foundBooks;

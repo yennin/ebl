@@ -16,10 +16,10 @@ namespace FantasticFictionParser.Storage
 {
     class JsonLocalStorage : ILocalStorage
     {
-        private static string localPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        private static string localAppFolder = localPath + @"\FFLoader";
-        private static string localStorageFilename = localPath + @"\FFLoader\books.json";
-        private static string localKeyStorageFilename = localPath + @"\FFLoader\keys.json";
+        private static readonly string localPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        private static readonly string localAppFolder = localPath + @"\FFLoader";
+        public static readonly string localStorageFilename = localPath + @"\FFLoader\books.json";
+        private static readonly string localKeyStorageFilename = localPath + @"\FFLoader\keys.json";
         private readonly ICollection<Book> books;
 
         public JsonLocalStorage(ICollection<Book> books)
@@ -112,7 +112,7 @@ namespace FantasticFictionParser.Storage
             return books.Count(b => b.isEBook);
         }
 
-        private byte[] GetImage(Uri url)
+        private byte[] GetImage(string url)
         {
             HttpWebRequest httpWebRequest = (HttpWebRequest)HttpWebRequest.Create(url);
             HttpWebResponse httpWebReponse = (HttpWebResponse)httpWebRequest.GetResponse();

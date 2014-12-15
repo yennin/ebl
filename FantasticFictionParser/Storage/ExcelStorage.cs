@@ -71,9 +71,9 @@ namespace FantasticFictionParser.Storage
             currentRow++;
         }
 
-        private void AddHyperlink(ExcelRange cell, Uri hyperlink, string label)
+        private void AddHyperlink(ExcelRange cell, string hyperlink, string label)
         {
-            cell.Hyperlink = hyperlink;
+            cell.Hyperlink = new Uri(hyperlink);
             cell.Value = label;
             cell.StyleName = "HyperLink";
         }

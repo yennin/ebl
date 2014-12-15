@@ -154,21 +154,24 @@
                 </Grid>
             </TabItem>
         </TabControl>
-            <Grid ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="0" VerticalAlignment="Bottom">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="28"/>
-                </Grid.RowDefinitions>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-                <Label x:Name="statusBarLeft" HorizontalAlignment="Left" MinWidth="100" Height="22" Margin="0,2" Padding="5,0"/>
-                <Label x:Name="statusBarMiddle" HorizontalAlignment="Center" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="1"/>
-                <Label x:Name="statusBarRight" HorizontalAlignment="Center" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="2"/>
-            <Button x:Name="dropboxButton" HorizontalAlignment="Right" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="3" Click="dropboxButton_Click">
-                Dropbox
+        <Grid ScrollViewer.VerticalScrollBarVisibility="Disabled" Margin="0" VerticalAlignment="Bottom">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="28"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Label x:Name="statusBarLeft" HorizontalAlignment="Left" MinWidth="100" Height="22" Margin="0,2" Padding="5,0"/>
+            <Label x:Name="statusBarMiddle" HorizontalAlignment="Center" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="1"/>
+            <Label x:Name="statusBarRight" HorizontalAlignment="Center" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="2"/>
+            <Button x:Name="dropboxSaveButton" HorizontalAlignment="Right" MinWidth="100" Height="24" Margin="0,2" Padding="5,0" Grid.Column="3" Click="dropboxSaveButton_Click" Width="120">
+                Save to Dropbox
+            </Button>
+            <Button x:Name="dropboxRestoreButton" HorizontalAlignment="Right" MinWidth="100" Height="24" Margin="0,2,122,2" Padding="5,0" Grid.Column="3" Click="dropboxRestoreButton_Click" Width="120">
+                Restore Dropbox
             </Button>
         </Grid>
     </Grid>
