@@ -5,12 +5,10 @@ using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows;
-using System.Windows.Forms;
+using System.Windows.Navigation;
 
 namespace FantasticFictionParser.OAuth2
 {
@@ -20,58 +18,65 @@ namespace FantasticFictionParser.OAuth2
     /// </summary>
     public partial class WebAuth : Window
     {
+        public static readonly string _RedirectUrl = "http://localhost/ebl";
         private static readonly string _AuthUrl = "https://www.dropbox.com/1/oauth2/authorize?client_id={0}&response_type=code&state={1}&redirect_uri={2}";
-        private string AppKey { get; set; }
-        private string AppSecret { get; set; }
-        private string RedirectUrl { get; set; }
-        private string csrf;
 
-        private WebBrowser authBrowser = new WebBrowser();
-        private AccessToken token;
+        private string oauth2State;
+        private string appSecret;
+        private string appKey;
 
-        public WebAuth(string AppKey, string AppSecret, string RedirectUrl)
+        public AccessToken Token { get; private set; }
+
+        public bool Result { get; private set; }
+
+        public WebAuth(string appKey, string appSecret)
         {
-            this.AppKey = AppKey;
-            this.AppSecret = AppSecret;
-            this.RedirectUrl = RedirectUrl;
+            this.appSecret = appSecret;
+            this.appKey = appKey;
 
             InitializeComponent();
-            authBrowser.DocumentCompleted += authBrowser_DocumentCompleted;
-            windowsFormHost.Child = authBrowser;
+
             Authenticate();
         }
 
         private void Authenticate()
         {
-            csrf = GenerateCsrfToken();
-            authBrowser.Navigate(string.Format(_AuthUrl, AppKey, csrf, RedirectUrl));
-
+            this.oauth2State = Guid.NewGuid().ToString("N");
+            this.Browser.Navigate(string.Format(_AuthUrl, appKey, oauth2State, _RedirectUrl));
         }
 
-        void authBrowser_DocumentCompleted(object sender, WebBrowserDocumentCompletedEventArgs e)
+        private void BrowserNavigating(object sender, NavigatingCancelEventArgs e)
         {
-                Debug.WriteLine(string.Format("Navigated to {0}", e.Url));
-                if (e.Url.AbsoluteUri.StartsWith(RedirectUrl))
-                {
-                    getAccessTokens(e.Url);
-                }
+            Debug.WriteLine(string.Format("Navigated to {0}", e.Uri));
+            if (!e.Uri.ToString().StartsWith(_RedirectUrl, StringComparison.OrdinalIgnoreCase))
+            {
+                // we need to ignore all navigation that isn't to the redirect uri.
+                return;
+            }
+
+            try
+            {
+                getAccessTokens(e.Uri);
+            }
+            catch (ArgumentException)
+            {
+                // There was an error in the URI passed to ParseTokenFragment
+            }
+            finally
+            {
+                e.Cancel = true;
+                this.Close();
+            }
         }
 
-        public AccessToken GetToken()
+        private void CancelClick(object sender, RoutedEventArgs e)
         {
-            return token;
-        }
-
-        private static string GenerateCsrfToken()
-        {
-            var bytes = new byte[21];
-            new RNGCryptoServiceProvider().GetBytes(bytes);
-            return Convert.ToBase64String(bytes).Replace("+", "-").Replace("/", "_");
+            this.Close();
         }
 
         private async void getAccessTokens(Uri url)
         {
-            if (!csrf.Equals(GetQueryString("state", url)))
+            if (!this.oauth2State.Equals(GetQueryString("state", url)))
             {
                 throw new UnauthorizedAccessException("Potential CSRF attack.");
             }
@@ -82,30 +87,29 @@ namespace FantasticFictionParser.OAuth2
             {
                 BaseAddress = new Uri("https://api.dropbox.com"),
             };
-            //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", Convert.ToBase64String(Encoding.ASCII.GetBytes(AppKey + ":" + AppSecret)));
 
             Task<HttpResponseMessage> response = client.PostAsync("/1/oauth2/token",
-                new FormUrlEncodedContent(new List<KeyValuePair<string,string>> {
+                new FormUrlEncodedContent(new List<KeyValuePair<string, string>> {
                     new KeyValuePair<string,string>("code", code),
-                    new KeyValuePair<string,string>("client_id", AppKey),
-                    new KeyValuePair<string,string>("client_secret", AppSecret),
+                    new KeyValuePair<string,string>("client_id", appKey),
+                    new KeyValuePair<string,string>("client_secret", appSecret),
                     new KeyValuePair<string,string>("grant_type", "authorization_code"),
-                    new KeyValuePair<string,string>("redirect_uri", RedirectUrl)
+                    new KeyValuePair<string,string>("redirect_uri", _RedirectUrl)
                 }));
             string result = await response.Result.Content.ReadAsStringAsync();
             using (StringReader sw = new StringReader(result))
             using (JsonReader jw = new JsonTextReader(sw))
             {
                 JsonSerializer serializer = new JsonSerializer();
-                token = serializer.Deserialize<AccessToken>(jw);
-                if (token.access_token != null)
+                Token = serializer.Deserialize<AccessToken>(jw);
+                if (Token.access_token != null)
                 {
-                    this.DialogResult = true;
+                    this.Result = true;
                 }
                 else
                 {
                     Debug.WriteLine(result);
-                    this.DialogResult = false;
+                    this.Result = false;
                 }
             }
         }

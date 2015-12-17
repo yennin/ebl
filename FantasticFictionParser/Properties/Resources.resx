@@ -118,6 +118,6 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="searchUrl" xml:space="preserve">
-    <value>http://www.fantasticfiction.co.uk/db-search/v4/books/?start=0&amp;size=50&amp;return-fields=booktype,title,year,pfn,hasimage,authorsinfo,seriesinfo,db,imageloc&amp;q=</value>
+    <value>http://www.fantasticfiction.co.uk/db-search/v4/books/?start=0&amp;size=50&amp;return-fields=booktype,title,year,pfn,hasimage,authorsinfo,seriesinfo,db,imageloc,imageurl_amazon&amp;q=</value>
   </data>
 </root>

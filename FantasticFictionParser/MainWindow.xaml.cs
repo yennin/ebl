@@ -365,14 +365,12 @@ namespace FantasticFictionParser
         private void dropboxSaveButton_Click(object sender, RoutedEventArgs e)
         {
             storage.SaveToDropbox();
-
             statusBarLeft.Content = string.Format("{0} Books stored to Dropbox", storage.Count());
         }
 
         private void dropboxRestoreButton_Click(object sender, RoutedEventArgs e)
         {
             storage.RestoreFromDropbox();
-
             statusBarLeft.Content = string.Format("{0} Books restored from Dropbox.", storage.Count());
             SetStatusbarStats();
         }

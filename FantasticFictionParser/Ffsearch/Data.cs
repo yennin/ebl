@@ -13,6 +13,7 @@ namespace FantasticFictionParser.Ffsearch
         public List<string> db { get; set; }
         public List<string> hasimage { get; set; }
         public List<string> imageloc { get; set; }
+        public List<string> imageurl_amazon { get; set; }
         public List<string> pfn { get; set; }
         public List<string> seriesinfo { get; set; }
         public List<string> title { get; set; }

@@ -12,6 +12,9 @@ namespace FantasticFictionParser.Ffsearch
 {
     class FFSearch
     {
+
+        private static string FF_IMG_BASE_URL = "http://img1.fantasticfiction.co.uk/thumbs/";
+
         public static SearchStatus SearchBooks(string searchText)
         {
             
@@ -59,8 +62,8 @@ namespace FantasticFictionParser.Ffsearch
         {
             List<Book> foundBooks = hits.Select(item => new Book()
             {
-                hasImage = "y".Equals(item.Hasimage) ? true : false,
-                imageLoc = "http://img1.fantasticfiction.co.uk/thumbs/" + item.Imageloc,
+                hasImage = HasImage(item.Imageloc, item.ImageurlAmazon),
+                imageLoc = BuildImageLoc(item.Imageloc, item.ImageurlAmazon),
                 pfn = "http://www.fantasticfiction.co.uk/" + item.Pfn,
                 seriesName = item.SeriesName,
                 seriesNumber = item.SeriesNumber,
@@ -72,5 +75,18 @@ namespace FantasticFictionParser.Ffsearch
             return foundBooks;
         }
 
+        private static bool HasImage(string imageloc, string imgurlAmazon)
+        {
+            return imageloc != null || imgurlAmazon != null;
+        }
+
+        private static string BuildImageLoc(string imageloc, string imgurlAmazon)
+        {
+            if (!HasImage(imageloc, imgurlAmazon))
+            {
+                return null;
+            }
+            return imageloc != null ? FF_IMG_BASE_URL + imageloc : imgurlAmazon;
+        }
     }
 }

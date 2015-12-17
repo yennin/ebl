@@ -18,7 +18,7 @@ namespace FantasticFictionParser.Storage
         int ReadCount();
         int EBookCount();
 
-        bool RestoreFromDropbox();
-        bool SaveToDropbox();
+        Task<bool> RestoreFromDropbox();
+        Task<bool> SaveToDropbox();
     }
 }

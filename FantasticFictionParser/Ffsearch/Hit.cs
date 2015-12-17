@@ -31,6 +31,11 @@ namespace FantasticFictionParser.Ffsearch
             get { return data.imageloc.FirstOrDefault(); }
         }
 
+        public string ImageurlAmazon
+        {
+            get { return data.imageurl_amazon.FirstOrDefault(); }
+        }
+
         public string Pfn
         {
             get { return data.pfn.FirstOrDefault(); }
