@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "200643045277",
+    "firebase_url": "https://eyota-book-library.firebaseio.com",
+    "project_id": "eyota-book-library",
+    "storage_bucket": "eyota-book-library.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:200643045277:android:6dd7b457362b3ebb",
+        "android_client_info": {
+          "package_name": "info.patsch.ebl"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "200643045277-1li31r4mn9plb4245r9lkm2kbt3k8slg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBB9YTJz1gCzPklljsDy1o1xsHB1oJnlqQ"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
