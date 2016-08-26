@@ -354,7 +354,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
                 List<Book> filteredBooks = new ArrayList<>();
                 for (Book book : books) {
                     if (book.getAuthorName().toUpperCase().contains(constraint) ||
-                            book.getTitle().toUpperCase().contains(constraint)) {
+                            book.getTitle().toUpperCase().contains(constraint) ||
+                            (book.getSeriesName() != null && book.getSeriesName().toUpperCase().contains(constraint))) {
                         filteredBooks.add(book);
                     }
                 }

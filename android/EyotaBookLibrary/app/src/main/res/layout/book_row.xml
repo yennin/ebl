@@ -2,7 +2,7 @@
                                     android:id="@+id/card_view"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:layout_margin="8dp">
+                                    android:layout_margin="4dp">
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -12,8 +12,8 @@
 
         <ImageView
             android:id="@+id/thumbnail"
-            android:layout_width="90dp"
-            android:layout_height="110dp"
+            android:layout_width="70dp"
+            android:layout_height="90dp"
             android:layout_alignParentTop="true"
             android:scaleType="fitCenter"
             android:src="@mipmap/ic_launcher"
@@ -23,6 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textSize="@dimen/large_text"
             android:text="@string/title"
             android:id="@+id/title"
             android:layout_alignParentTop="true"
@@ -33,6 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textSize="@dimen/medium_text"
             android:text="@string/author"
             android:id="@+id/author"
             android:layout_below="@+id/title"
@@ -43,6 +45,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="@dimen/small_text"
             android:text="@string/year"
             android:id="@+id/year"
             android:layout_below="@+id/author"
@@ -54,6 +57,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="@dimen/small_text"
             android:text="@string/series"
             android:id="@+id/series"
             android:layout_below="@+id/author"
@@ -64,6 +68,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textSize="@dimen/small_text"
             android:text="@string/series_number"
             android:id="@+id/seriesNumber"
             android:layout_below="@+id/author"
@@ -74,30 +79,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/is_read"
+            android:textSize="@dimen/small_text"
             android:id="@+id/read"
             android:layout_below="@+id/series"
             android:layout_toEndOf="@+id/thumbnail"
             android:layout_margin="@dimen/text_default_margin"
+            android:button="@drawable/custom_checkbox_design"
             android:clickable="false" />
 
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/is_book"
+            android:textSize="@dimen/small_text"
             android:id="@+id/book"
             android:layout_below="@+id/series"
             android:layout_toEndOf="@+id/read"
             android:layout_margin="@dimen/text_default_margin"
+            android:button="@drawable/custom_checkbox_design"
             android:clickable="false" />
 
         <CheckBox
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/is_ebook"
+            android:textSize="@dimen/small_text"
             android:id="@+id/ebook"
             android:layout_below="@+id/series"
             android:layout_toEndOf="@+id/book"
             android:layout_margin="@dimen/text_default_margin"
+            android:button="@drawable/custom_checkbox_design"
             android:clickable="false" />
 
     </RelativeLayout>
