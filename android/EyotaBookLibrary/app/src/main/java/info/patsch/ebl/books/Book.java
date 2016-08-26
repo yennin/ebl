@@ -26,7 +26,7 @@ public class Book implements Comparable<Book> {
     private String comment;
 
     public Book() {
-        isBook = true;
+
     }
 
     public byte[] getImage() {
@@ -145,7 +145,7 @@ public class Book implements Comparable<Book> {
         return isFavorite;
     }
 
-    public void setFavorite(boolean favorite) {
+    public void setIsFavorite(boolean favorite) {
         isFavorite = favorite;
     }
 

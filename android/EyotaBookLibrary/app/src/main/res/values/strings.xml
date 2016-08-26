@@ -13,7 +13,7 @@
     <string name="is_book">Book</string>
     <string name="is_ebook">e-Book</string>
     <string name="comment">Comment</string>
-    <string name="done">Done</string>
+    <string name="done_loading">Done loading %d books.</string>
     <string name="filter">Search</string>
     <string name="edit_dropdown">edit_dropdown</string>
     <string name="edit">Edit</string>

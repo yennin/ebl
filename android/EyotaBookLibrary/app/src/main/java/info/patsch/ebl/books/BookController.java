@@ -64,14 +64,10 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
 
     @Override
     public void onClick(View v) {
-        if (dropdownButton.equals(v)) {
-
-        }
-        else {
             Toast.makeText(v.getContext(),
                     String.format("Clicked on position %d", getAdapterPosition()),
                     Toast.LENGTH_SHORT).show();
-        }
+
     }
 
     public void bindModel(Book book) {
@@ -86,6 +82,7 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
             ebookBox.setChecked(book.isEBook());
             setImage(book);
         }
+        dropdownButton.setTag(book);
     }
 
     private void setImage(Book book) {
@@ -93,6 +90,10 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
             byte[] image = Base64.decode(book.getImageEncoded(), Base64.URL_SAFE);
             Bitmap bMap = BitmapFactory.decodeByteArray(image, 0, image.length);
             thumbnailView.setImageBitmap(bMap);
+            thumbnailView.setVisibility(View.VISIBLE);
+        }
+        else {
+            thumbnailView.setVisibility(View.INVISIBLE);
         }
     }
 

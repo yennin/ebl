@@ -3,6 +3,7 @@ package info.patsch.ebl.books;
 import android.app.ProgressDialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -31,7 +33,10 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import info.patsch.ebl.R;
 import info.patsch.ebl.RecyclerViewFragment;
@@ -50,10 +55,13 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
 
 
     private SortedList<Book> model = null;
-    private List<Book> books = null;
+    private Set<Book> books = null;
     private BookAdapter adapter = null;
     private SearchView mSearchView = null;
     private CharSequence initialQuery;
+
+    private boolean initialDataLoaded = false;
+    private boolean isLoading = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,7 +71,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
 
         adapter = new BookAdapter();
         model = new SortedList<>(Book.class, sortCallback);
-        books = new ArrayList<>();
+        books = new HashSet<>();
     }
 
     @Override
@@ -75,6 +83,14 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
 
         mAuth = FirebaseAuth.getInstance();
         mAuth.addAuthStateListener(this);
+
+        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addBook();
+            }
+        });
     }
 
     @Override
@@ -142,25 +158,80 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
     }
 
     private void loadBooks() {
-        final ProgressDialog progressDialog = startLoading();
-
+        if (initialDataLoaded || isLoading) {
+            return;
+        }
+        isLoading = true;
         FirebaseUser currentUser = mAuth.getCurrentUser();
         mRef = FirebaseDatabase.getInstance().getReference();
         mBookRef = mRef.child("users").child(currentUser.getUid()).child("books");
         mBookRef.keepSynced(true);
+
+        mBookRef.orderByChild("title").addChildEventListener(
+                new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                        if (initialDataLoaded) {
+                            Book book = dataSnapshot.getValue(Book.class);
+                            books.add(book);
+                            adapter.add(book);
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                        if (initialDataLoaded) {
+                            Book book = dataSnapshot.getValue(Book.class);
+                            books.add(book);
+                            adapter.add(book);
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+                        if (initialDataLoaded) {
+                            Book book = dataSnapshot.getValue(Book.class);
+                            books.remove(book);
+                            adapter.remove(book);
+                            adapter.notifyDataSetChanged();
+                        }
+                    }
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                        if (initialDataLoaded) {
+                            // should not happen, ignore
+                            Book book = dataSnapshot.getValue(Book.class);
+                            Log.w(TAG, "Book moved"+book.getTitle());
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
+                    }
+                });
+
         mBookRef.orderByChild("title").addListenerForSingleValueEvent(
                 new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (initialDataLoaded) {
+                            return;
+                        }
+                        final ProgressDialog progressDialog = startLoading();
                         Iterable<DataSnapshot> children = dataSnapshot.getChildren();
                         for (DataSnapshot child : children) {
                             Book book = child.getValue(Book.class);
                             books.add(book);
                         }
-                        adapter.add(books);
+                        adapter.addAll(books);
                         progressDialog.dismiss();
-                        Toast.makeText(getActivity(), R.string.done, Toast.LENGTH_SHORT)
+                        Toast.makeText(getActivity(), TextUtils.concat(getString(R.string.done_loading, books.size())), Toast.LENGTH_SHORT)
                                 .show();
+                        initialDataLoaded = true;
                     }
 
                     @Override
@@ -249,18 +320,40 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
             return filter;
         }
 
-        public void add(List<Book> books) {
+        public void addAll(Set<Book> books) {
             model.beginBatchedUpdates();
             model.addAll(books);
             filterList.addAll(books);
+            Collections.sort(filterList);
+            model.endBatchedUpdates();
+        }
+
+        public void add(Book book) {
+            model.beginBatchedUpdates();
+            if (filterList.contains(book)) {
+                // replace
+                model.remove(book);
+                filterList.remove(book);
+            }
+            model.add(book);
+            filterList.add(book);
+            Collections.sort(filterList);
+            model.endBatchedUpdates();
+        }
+
+        public void remove(Book book) {
+            model.beginBatchedUpdates();
+            model.remove(book);
+            filterList.remove(book);
             model.endBatchedUpdates();
         }
 
         public void replaceAll(List<Book> books) {
-            filterList = books;
             model.beginBatchedUpdates();
+            filterList = books;
             model.clear();
             model.addAll(books);
+            Collections.sort(filterList);
             model.endBatchedUpdates();
         }
     }
@@ -303,20 +396,16 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
 
 
     //  Query query = mBookRef.orderByChild("title");
-//mManager.smoothScrollToPosition(mBooks, null, positionStart);
+//
 
 
     private void addBook() {
-        /*
-                if (isSignedIn()) {
-                    Book book = new Book();
-                    book.setTitle("Test Book");
-                    book.setAuthorName("Test Author");
-                    book.setYear(2019);
-                    DatabaseReference childRef = mBookRef.push();
-                    book.setId(childRef.getKey());
-                    childRef.setValue(book);
-         */
+
+        Book book = new Book();
+        book.setTitle("Test Book");
+        book.setAuthorName("Test Author");
+        book.setYear(2019);
+        addBook(book);
         //loadBooksFromFile();
     }
 
@@ -324,7 +413,9 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         ObjectMapper mapper = new ObjectMapper();
         try (InputStream is = getResources().openRawResource(R.raw.books)) {
             Book[] books = mapper.readValue(is, Book[].class);
+            int i = 0;
             for (Book book : books) {
+                book.setId(i++ + "");
                 addBook(book);
             }
         } catch (Exception e) {
@@ -332,7 +423,21 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         }
     }
 
+    private void deleteBook(Book book) {
+        adapter.remove(book);
+        mBookRef.child(book.getId()).removeValue();
+    }
+
+
+    private void updateBook(Book book) {
+        mBookRef.child(book.getId()).setValue(book);
+    }
+
+
     private void addBook(Book book) {
+        if (books.contains(book)) {
+            return;
+        }
         if (book.getImage() != null) {
             book.setImageEncoded(Base64.encodeToString(book.getImage(), Base64.URL_SAFE));
         }
@@ -340,6 +445,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         DatabaseReference childRef = mBookRef.push();
         book.setId(childRef.getKey());
         childRef.setValue(book);
+        adapter.add(book);
+        adapter.notifyDataSetChanged();
     }
 
 
@@ -365,7 +472,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
                 results.values = filteredBooks;
             } else {
                 results.count = books.size();
-                results.values = books;
+                results.values = new ArrayList<>(books);
             }
             return results;
         }
@@ -378,16 +485,35 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
     }
 
 
-
     private class DropdownListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
+            final Book book = (Book)v.getTag();
 
             PopupMenu popup = new PopupMenu(getActivity(), v);//
             popup.getMenuInflater().inflate(R.menu.book_menu, popup.getMenu());
             popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
                 public boolean onMenuItemClick(MenuItem item) {
-                    Toast.makeText(getActivity(), "Clicked item is : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                    switch (item.getItemId()) {
+                        case R.id.delete:
+                            deleteBook(book);
+                            break;
+                        case R.id.edit:
+                            break;
+                        case R.id.toggle_book:
+                            book.setBook(!book.isBook());
+                            updateBook(book);
+                            break;
+                        case R.id.toggle_ebook:
+                            book.setEBook(!book.isEBook());
+                            updateBook(book);
+                            break;
+                        case R.id.toggle_read:
+                            book.setRead(!book.isRead());
+                            updateBook(book);
+                            break;
+                    }
+                    adapter.notifyDataSetChanged();
                     return true;
                 }
             });
