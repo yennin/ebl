@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
@@ -227,7 +228,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         @Override
         public BookController onCreateViewHolder(ViewGroup parent, int viewType) {
             return (new BookController(getActivity().getLayoutInflater()
-                    .inflate(R.layout.book_row, parent, false)));
+                    .inflate(R.layout.book_row, parent, false), new DropdownListener()));
         }
 
         @Override
@@ -373,6 +374,25 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         protected void publishResults(CharSequence constraint, final FilterResults results) {
             adapter.replaceAll((List<Book>) results.values);
             adapter.notifyDataSetChanged();
+        }
+    }
+
+
+
+    private class DropdownListener implements View.OnClickListener {
+        @Override
+        public void onClick(View v) {
+
+            PopupMenu popup = new PopupMenu(getActivity(), v);//
+            popup.getMenuInflater().inflate(R.menu.book_menu, popup.getMenu());
+            popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                public boolean onMenuItemClick(MenuItem item) {
+                    Toast.makeText(getActivity(), "Clicked item is : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                    return true;
+                }
+            });
+
+            popup.show();//showing popup menu
         }
     }
 

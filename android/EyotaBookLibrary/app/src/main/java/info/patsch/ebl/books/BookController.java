@@ -9,6 +9,7 @@ import android.util.Base64;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -26,8 +27,9 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
     CheckBox readBox = null;
     CheckBox bookBox = null;
     CheckBox ebookBox = null;
+    ImageButton dropdownButton = null;
 
-    public BookController(View row) {
+    public BookController(View row, View.OnClickListener dropdownListener) {
         super(row);
         cardView = row;
         thumbnailView = (ImageView) row.findViewById(R.id.thumbnail);
@@ -39,8 +41,10 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
         readBox = (CheckBox) row.findViewById(R.id.read);
         bookBox = (CheckBox) row.findViewById(R.id.book);
         ebookBox = (CheckBox) row.findViewById(R.id.ebook);
+        dropdownButton = (ImageButton) row.findViewById(R.id.edit_dropdown);
 
         row.setOnClickListener(this);
+        dropdownButton.setOnClickListener(dropdownListener);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             row.setOnTouchListener(new View.OnTouchListener() {
@@ -60,9 +64,14 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
 
     @Override
     public void onClick(View v) {
-        Toast.makeText(v.getContext(),
-                String.format("Clicked on position %d", getAdapterPosition()),
-                Toast.LENGTH_SHORT).show();
+        if (dropdownButton.equals(v)) {
+
+        }
+        else {
+            Toast.makeText(v.getContext(),
+                    String.format("Clicked on position %d", getAdapterPosition()),
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
     public void bindModel(Book book) {
@@ -86,4 +95,5 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
             thumbnailView.setImageBitmap(bMap);
         }
     }
+
 }

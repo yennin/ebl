@@ -15,5 +15,11 @@
     <string name="comment">Comment</string>
     <string name="done">Done</string>
     <string name="filter">Search</string>
+    <string name="edit_dropdown">edit_dropdown</string>
+    <string name="edit">Edit</string>
+    <string name="toggle_read">Toggle Read</string>
+    <string name="toggle_book">Toggle Book</string>
+    <string name="toggle_e_book">Toggle e-Book</string>
+    <string name="delete">Delete</string>
 
 </resources>

@@ -19,8 +19,20 @@
             android:src="@mipmap/ic_launcher"
             android:layout_margin="2dp"/>
 
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/edit_dropdown"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentEnd="true"
+            android:src="@drawable/ic_dots_vertical_grey600_18dp"
+            android:background="#00ffffff"
+            android:layout_margin="4dp"
+            android:textSize="@dimen/small_text"
+            android:contentDescription="@string/edit_dropdown"/>
+
         <TextView
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:textSize="@dimen/large_text"
@@ -28,6 +40,7 @@
             android:id="@+id/title"
             android:layout_alignParentTop="true"
             android:layout_toEndOf="@+id/thumbnail"
+            android:layout_toStartOf="@id/edit_dropdown"
             android:layout_margin="@dimen/text_default_margin"/>
 
         <TextView
