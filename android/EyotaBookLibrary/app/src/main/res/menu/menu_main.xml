@@ -2,6 +2,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="info.patsch.ebl.MainActivity">
+
+    <item
+        android:id="@+id/booklist_filter"
+        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:showAsAction="ifRoom|collapseActionView"
+        android:title="@string/filter" />
+
+
     <item
         android:id="@+id/action_settings"
         android:orderInCategory="100"
