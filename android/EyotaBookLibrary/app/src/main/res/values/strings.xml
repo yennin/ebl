@@ -30,5 +30,6 @@
     <string name="book_cover_image">Book Cover Image</string>
     <string name="validation_error_title">Title is mandatory</string>
     <string name="validation_error_author">Author is mandatory</string>
+    <string name="wrong_year_format">Wrong Year entry</string>
 
 </resources>

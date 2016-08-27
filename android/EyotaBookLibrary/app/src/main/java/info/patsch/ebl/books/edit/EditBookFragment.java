@@ -7,6 +7,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -71,10 +74,7 @@ public class EditBookFragment extends Fragment implements Callback<BookSearchRes
 
         FragmentEditBookBinding dataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_edit_book, container, false);
 
-        dataBinding.setBook(mBook);
-        mPictureView = dataBinding.picture;
-        setImage(mBook);
-
+        initDatabinding(dataBinding);
         base = dataBinding.getRoot();
 
         ImageButton scanButton = (ImageButton) base.findViewById(R.id.scan);
@@ -88,6 +88,42 @@ public class EditBookFragment extends Fragment implements Callback<BookSearchRes
         });
 
         return base;
+    }
+
+    private void initDatabinding(final FragmentEditBookBinding dataBinding) {
+        dataBinding.setBook(mBook);
+        mPictureView = dataBinding.picture;
+        setImage(mBook);
+
+        dataBinding.yearInput.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                // do nothing
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+                if (TextUtils.isEmpty(charSequence)) {
+                    mBook.setYear(0);
+                }
+                else {
+                    try {
+                        int year = Integer.parseInt(charSequence.toString());
+                        mBook.setYear(year);
+                    }
+                    catch (NumberFormatException ex) {
+                        dataBinding.yearInput.setError(getString(R.string.wrong_year_format));
+                    }
+
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                // do nothing
+            }
+        });
+
     }
 
     private void setImage(Book book) {

@@ -4,6 +4,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -32,7 +33,7 @@ public class MainActivity extends AppCompatActivity  {
             FirebaseDatabase.getInstance().setPersistenceEnabled(true);
         }
         catch (DatabaseException ex) {
-            ex.printStackTrace();
+            Log.w("MainActivity", ex.getMessage(), ex);
         }
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
