@@ -2,13 +2,18 @@ package info.patsch.ebl.books.edit;
 
 import android.content.Context;
 import android.content.Intent;
+import android.databinding.DataBindingUtil;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import java.io.IOException;
@@ -17,6 +22,7 @@ import info.patsch.ebl.R;
 import info.patsch.ebl.books.Book;
 import info.patsch.ebl.books.google.BookSearchResult;
 import info.patsch.ebl.books.google.GoogleBooksService;
+import info.patsch.ebl.databinding.FragmentEditBookBinding;
 import info.patsch.ebl.scanner.IntentIntegrator;
 import info.patsch.ebl.scanner.IntentResult;
 import okhttp3.ResponseBody;
@@ -40,6 +46,8 @@ public class EditBookFragment extends Fragment implements Callback<BookSearchRes
     private GoogleBooksService service = null;
     private String apiKey = null;
 
+    private ImageView mPictureView;
+
     public static EditBookFragment newInstance(Book book) {
         EditBookFragment fragment = new EditBookFragment();
         Bundle args = new Bundle();
@@ -60,8 +68,14 @@ public class EditBookFragment extends Fragment implements Callback<BookSearchRes
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        base = inflater.inflate(R.layout.fragment_edit_book, container, false);
+
+        FragmentEditBookBinding dataBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_edit_book, container, false);
+
+        dataBinding.setBook(mBook);
+        mPictureView = dataBinding.picture;
+        setImage(mBook);
+
+        base = dataBinding.getRoot();
 
         ImageButton scanButton = (ImageButton) base.findViewById(R.id.scan);
         scanButton.setOnClickListener(new View.OnClickListener() {
@@ -74,6 +88,18 @@ public class EditBookFragment extends Fragment implements Callback<BookSearchRes
         });
 
         return base;
+    }
+
+    private void setImage(Book book) {
+        if (book.getImageEncoded() != null) {
+            byte[] image = Base64.decode(book.getImageEncoded(), Base64.URL_SAFE);
+            Bitmap bMap = BitmapFactory.decodeByteArray(image, 0, image.length);
+            mPictureView.setImageBitmap(bMap);
+            mPictureView.setBackground(null);
+        }
+        else {
+            mPictureView.setBackgroundResource(R.drawable.border);
+        }
     }
 
     public void onActivityResult(int request, int result, Intent intent) {
@@ -93,13 +119,6 @@ public class EditBookFragment extends Fragment implements Callback<BookSearchRes
             message = String.format(message, formatName, scan.getContents());
             Toast.makeText(getActivity(), message, Toast.LENGTH_LONG).show();
 
-        }
-    }
-
-
-    public void onButtonPressed(Book book) {
-        if (mListener != null) {
-            mListener.onBookUpdated(book);
         }
     }
 

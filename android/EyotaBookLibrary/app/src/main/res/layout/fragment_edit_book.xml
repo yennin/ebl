@@ -1,61 +1,178 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="?android:attr/selectableItemBackground"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="info.patsch.ebl.books.edit.EditBookFragment">
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools">
 
-    <ImageView
-        android:id="@+id/picture"
-        android:layout_width="70dp"
-        android:layout_height="90dp"
-        android:layout_alignParentTop="true"
-        android:layout_margin="2dp"
-        android:scaleType="fitCenter"
-        android:src="@mipmap/ic_launcher"/>
-
-    <ImageButton
-        android:id="@+id/scan"
-        android:layout_width="wrap_content"
+    <data>
+        <variable
+            name="book"
+            type="info.patsch.ebl.books.Book"/>
+    </data>
+    <GridLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentEnd="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="4dp"
-        android:background="#00ffffff"
-        android:contentDescription="@string/scan"
-        android:src="@drawable/ic_barcode_scan_black_48dp" />
+        android:background="?android:attr/selectableItemBackground"
+        android:columnCount="2"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="info.patsch.ebl.books.edit.EditBookFragment">
 
-    <CheckBox
-        android:id="@+id/select_read"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/picture"
-        android:layout_margin="@dimen/text_default_margin"
-        android:button="@drawable/custom_checkbox_design_large"
-        android:text="@string/is_read"/>
+        <ImageView
+            android:id="@+id/picture"
+            android:layout_width="90dp"
+            android:layout_height="110dp"
+            android:layout_column="0"
+            android:layout_row="0"
+            android:contentDescription="@string/book_cover_image"
+            android:scaleType="fitCenter"
+            android:padding="1dp"
+            android:background="@drawable/border"
+            />
 
-    <CheckBox
-        android:id="@+id/select_book"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/picture"
-        android:layout_margin="@dimen/text_default_margin"
-        android:layout_toEndOf="@+id/select_read"
-        android:button="@drawable/custom_checkbox_design_large"
-        android:text="@string/is_book"/>
+        <ImageButton
+            android:id="@+id/scan"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_gravity="right"
+            android:layout_row="0"
+            android:background="#00ffffff"
+            android:contentDescription="@string/scan"
+            android:src="@drawable/ic_barcode_scan_black_48dp"/>
 
-    <CheckBox
-        android:id="@+id/select_ebook"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/picture"
-        android:layout_margin="@dimen/text_default_margin"
-        android:layout_toEndOf="@+id/select_book"
-        android:button="@drawable/custom_checkbox_design_large"
-        android:text="@string/is_ebook"/>
+        <CheckBox
+            android:id="@+id/select_read"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_gravity="center_horizontal"
+            android:layout_row="1"
+            android:layout_marginTop="@dimen/activity_vertical_margin"
+            android:button="@drawable/custom_checkbox_design_large"
+            android:text="@string/is_read"
+            android:checked="@={book.read}"/>
 
-</RelativeLayout>
+        <CheckBox
+            android:id="@+id/select_book"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_gravity="center_horizontal"
+            android:layout_row="2"
+            android:button="@drawable/custom_checkbox_design_large"
+            android:text="@string/is_book"
+            android:checked="@={book.book}"/>
+
+        <CheckBox
+            android:id="@+id/select_ebook"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_gravity="center_horizontal"
+            android:layout_row="2"
+            android:button="@drawable/custom_checkbox_design_large"
+            android:text="@string/is_ebook"
+            android:checked="@={book.EBook}"/>
+
+        <TextView
+            android:id="@+id/edit_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="3"
+            android:labelFor="@+id/titleInput"
+            android:text="@string/title"
+            android:textColor="@color/textTitle"/>
+
+        <EditText
+            android:id="@+id/titleInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_gravity="fill_horizontal"
+            android:layout_row="3"
+            android:inputType="text"
+            android:text="@={book.title}"/>
+
+        <TextView
+            android:id="@+id/edit_author"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="4"
+            android:labelFor="@+id/authorInput"
+            android:text="@string/author"
+            android:textColor="@color/textTitle"/>
+
+        <EditText
+            android:id="@+id/authorInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_gravity="fill_horizontal"
+            android:layout_row="4"
+            android:inputType="text"
+            android:text="@={book.authorName}"/>
+
+        <TextView
+            android:id="@+id/edit_series"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="5"
+            android:labelFor="@+id/seriesInput"
+            android:text="@string/series"
+            android:textColor="@color/textTitle"/>
+
+        <EditText
+            android:id="@+id/seriesInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_gravity="fill_horizontal"
+            android:layout_row="5"
+            android:inputType="text"
+            android:text="@={book.seriesName}"/>
+
+        <TextView
+            android:id="@+id/edit_series_number"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="6"
+            android:labelFor="@+id/seriesNumberInput"
+            android:text="@string/series_number"
+            android:textColor="@color/textTitle"/>
+
+        <EditText
+            android:id="@+id/seriesNumberInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_gravity="fill_horizontal"
+            android:layout_row="6"
+            android:inputType="numberDecimal"
+            android:text="@={book.seriesNumber}"/>
+
+        <TextView
+            android:id="@+id/edit_year"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="0"
+            android:layout_row="7"
+            android:labelFor="@+id/yearInput"
+            android:text="@string/year"
+            android:textColor="@color/textTitle"/>
+
+        <EditText
+            android:id="@+id/yearInput"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_column="1"
+            android:layout_gravity="fill_horizontal"
+            android:layout_row="7"
+            android:inputType="numberDecimal"
+            android:text="@{String.valueOf(book.year)}"/>
+
+    </GridLayout>
+</layout>

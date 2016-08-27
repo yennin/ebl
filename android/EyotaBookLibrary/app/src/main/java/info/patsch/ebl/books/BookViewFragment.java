@@ -449,6 +449,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         DatabaseReference childRef = mBookRef.push();
         book.setId(childRef.getKey());
         childRef.setValue(book);
+        books.add(book);
         adapter.add(book);
         adapter.notifyDataSetChanged();
     }
@@ -538,8 +539,23 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         if (requestCode == EDIT_BOOK_REQUEST) {
             if (resultCode == Activity.RESULT_OK) {
                 Book book = data.getParcelableExtra(Book.BOOK_TAG);
-                books.add(book);
-                adapter.add(book);
+                if (TextUtils.isEmpty(book.getTitle())) {
+                    Toast.makeText(getActivity(), R.string.validation_error_title, Toast.LENGTH_LONG).show();
+                    return;
+                } else if ( TextUtils.isEmpty(book.getAuthorName())) {
+                    Toast.makeText(getActivity(), R.string.validation_error_author, Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (book.getId() == null) { //new book
+                    addBook(book);
+                }
+                else {
+                    updateBook(book);
+                    adapter.add(book);
+                    books.add(book);
+                    adapter.notifyDataSetChanged();
+                }
             }
         }
     }

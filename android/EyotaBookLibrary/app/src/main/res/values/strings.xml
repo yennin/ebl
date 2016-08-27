@@ -27,5 +27,8 @@
     <string name="google_books_url">https://www.googleapis.com</string>
     <string name="google_books_api_key">AIzaSyBB9YTJz1gCzPklljsDy1o1xsHB1oJnlqQ</string>
     <string name="isbn_query">isbn:%s</string>
+    <string name="book_cover_image">Book Cover Image</string>
+    <string name="validation_error_title">Title is mandatory</string>
+    <string name="validation_error_author">Author is mandatory</string>
 
 </resources>

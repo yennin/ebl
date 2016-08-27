@@ -1,0 +1,11 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="info.patsch.ebl.MainActivity">
+
+    <item
+        android:id="@+id/edit_ok"
+        android:icon="@drawable/ic_check_white_24dp"
+        app:showAsAction="ifRoom"
+        android:title="@string/button_text_save" />
+</menu>
