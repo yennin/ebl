@@ -1,6 +1,8 @@
 package info.patsch.ebl.books;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
@@ -40,6 +42,7 @@ import java.util.Set;
 
 import info.patsch.ebl.R;
 import info.patsch.ebl.RecyclerViewFragment;
+import info.patsch.ebl.books.edit.EditBookActivity;
 
 /**
  * Created by patsch on 22.08.16.
@@ -48,6 +51,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
 
     public static final String TAG = "BookViewFragment";
     private static final String STATE_QUERY = "state_query";
+
+    private static final int EDIT_BOOK_REQUEST = 37;
 
     private FirebaseAuth mAuth = null;
     private DatabaseReference mRef = null;
@@ -161,6 +166,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         if (initialDataLoaded || isLoading) {
             return;
         }
+        final ProgressDialog progressDialog = startLoading();
         isLoading = true;
         FirebaseUser currentUser = mAuth.getCurrentUser();
         mRef = FirebaseDatabase.getInstance().getReference();
@@ -221,7 +227,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
                         if (initialDataLoaded) {
                             return;
                         }
-                        final ProgressDialog progressDialog = startLoading();
                         Iterable<DataSnapshot> children = dataSnapshot.getChildren();
                         for (DataSnapshot child : children) {
                             Book book = child.getValue(Book.class);
@@ -402,10 +407,9 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
     private void addBook() {
 
         Book book = new Book();
-        book.setTitle("Test Book");
-        book.setAuthorName("Test Author");
-        book.setYear(2019);
-        addBook(book);
+        editBookInfo(book);
+
+
         //loadBooksFromFile();
     }
 
@@ -499,6 +503,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
                             deleteBook(book);
                             break;
                         case R.id.edit:
+                            editBookInfo(book);
                             break;
                         case R.id.toggle_book:
                             book.setBook(!book.isBook());
@@ -522,4 +527,20 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         }
     }
 
+    private void editBookInfo(Book book) {
+        Intent intent = new Intent(getActivity(), EditBookActivity.class);
+        intent.putExtra(Book.BOOK_TAG, book);
+        startActivityForResult(intent, EDIT_BOOK_REQUEST);
+    }
+
+    public void onActivityResult(int requestCode, int resultCode,
+                                 Intent data) {
+        if (requestCode == EDIT_BOOK_REQUEST) {
+            if (resultCode == Activity.RESULT_OK) {
+                Book book = data.getParcelableExtra(Book.BOOK_TAG);
+                books.add(book);
+                adapter.add(book);
+            }
+        }
+    }
 }

@@ -22,4 +22,10 @@
     <string name="toggle_e_book">Toggle e-Book</string>
     <string name="delete">Delete</string>
 
+
+    <string name="scan">Scan ISBN</string>
+    <string name="google_books_url">https://www.googleapis.com</string>
+    <string name="google_books_api_key">AIzaSyBB9YTJz1gCzPklljsDy1o1xsHB1oJnlqQ</string>
+    <string name="isbn_query">isbn:%s</string>
+
 </resources>
