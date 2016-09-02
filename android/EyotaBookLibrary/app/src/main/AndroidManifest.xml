@@ -28,6 +28,8 @@
 
         <activity android:name=".books.edit.EditBookActivity">
         </activity>
+        <activity android:name=".books.search.BookSearchActivity">
+        </activity>
     </application>
 
 </manifest>

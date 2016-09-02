@@ -43,6 +43,7 @@ import java.util.Set;
 import info.patsch.ebl.R;
 import info.patsch.ebl.RecyclerViewFragment;
 import info.patsch.ebl.books.edit.EditBookActivity;
+import info.patsch.ebl.books.search.BookSearchActivity;
 
 /**
  * Created by patsch on 22.08.16.
@@ -52,7 +53,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
     public static final String TAG = "BookViewFragment";
     private static final String STATE_QUERY = "state_query";
 
-    private static final int EDIT_BOOK_REQUEST = 37;
+    public static final int EDIT_BOOK_REQUEST = 37;
+    public final static int SEARCH_BOOK_REQUEST = 27;
 
     private FirebaseAuth mAuth = null;
     private DatabaseReference mRef = null;
@@ -93,7 +95,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addBook();
+                Intent intent = new Intent(getActivity(), BookSearchActivity.class);
+                startActivityForResult(intent, SEARCH_BOOK_REQUEST);
             }
         });
     }
@@ -210,7 +213,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
                         if (initialDataLoaded) {
                             // should not happen, ignore
                             Book book = dataSnapshot.getValue(Book.class);
-                            Log.w(TAG, "Book moved"+book.getTitle());
+                            Log.w(TAG, "Book moved" + book.getTitle());
                         }
                     }
 
@@ -291,7 +294,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         }
     };
 
-
     class BookAdapter extends RecyclerView.Adapter<BookController> implements Filterable {
 
         List<Book> filterList = null;
@@ -304,7 +306,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         @Override
         public BookController onCreateViewHolder(ViewGroup parent, int viewType) {
             return (new BookController(getActivity().getLayoutInflater()
-                    .inflate(R.layout.book_row, parent, false), new DropdownListener()));
+                    .inflate(R.layout.book_row, parent, false), new DropdownListener(), null));
         }
 
         @Override
@@ -382,7 +384,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
     @Override
     public void onSaveInstanceState(Bundle state) {
         super.onSaveInstanceState(state);
-        if (!mSearchView.isIconified()) {
+        if (mSearchView != null && !mSearchView.isIconified()) {
             state.putCharSequence(STATE_QUERY, mSearchView.getQuery());
         }
 
@@ -397,20 +399,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
             initialQuery = savedInstanceState.getCharSequence(STATE_QUERY);
         }
         setHasOptionsMenu(true);
-    }
-
-
-    //  Query query = mBookRef.orderByChild("title");
-//
-
-
-    private void addBook() {
-
-        Book book = new Book();
-        editBookInfo(book);
-
-
-        //loadBooksFromFile();
     }
 
     private void loadBooksFromFile() {
@@ -432,15 +420,13 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         mBookRef.child(book.getId()).removeValue();
     }
 
-
     private void updateBook(Book book) {
         mBookRef.child(book.getId()).setValue(book);
     }
 
-
-    private void addBook(Book book) {
+    private boolean addBook(Book book) {
         if (books.contains(book)) {
-            return;
+            return false;
         }
         if (book.getImage() != null) {
             book.setImageEncoded(Base64.encodeToString(book.getImage(), Base64.URL_SAFE));
@@ -452,8 +438,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         books.add(book);
         adapter.add(book);
         adapter.notifyDataSetChanged();
+        return true;
     }
-
 
     private class CustomFilter extends Filter {
         @Override
@@ -489,11 +475,10 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         }
     }
 
-
     private class DropdownListener implements View.OnClickListener {
         @Override
         public void onClick(View v) {
-            final Book book = (Book)v.getTag();
+            final Book book = (Book) v.getTag();
 
             PopupMenu popup = new PopupMenu(getActivity(), v);//
             popup.getMenuInflater().inflate(R.menu.book_menu, popup.getMenu());
@@ -536,25 +521,30 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
 
     public void onActivityResult(int requestCode, int resultCode,
                                  Intent data) {
-        if (requestCode == EDIT_BOOK_REQUEST) {
-            if (resultCode == Activity.RESULT_OK) {
+        if (resultCode == Activity.RESULT_OK) {
+
+            if (requestCode == EDIT_BOOK_REQUEST || requestCode == SEARCH_BOOK_REQUEST) {
                 Book book = data.getParcelableExtra(Book.BOOK_TAG);
                 if (TextUtils.isEmpty(book.getTitle())) {
                     Toast.makeText(getActivity(), R.string.validation_error_title, Toast.LENGTH_LONG).show();
                     return;
-                } else if ( TextUtils.isEmpty(book.getAuthorName())) {
+                } else if (TextUtils.isEmpty(book.getAuthorName())) {
                     Toast.makeText(getActivity(), R.string.validation_error_author, Toast.LENGTH_LONG).show();
                     return;
                 }
 
                 if (book.getId() == null) { //new book
-                    addBook(book);
-                }
-                else {
+                    if (addBook(book)) {
+                        Toast.makeText(getActivity(), R.string.new_book_added, Toast.LENGTH_LONG).show();
+                    } else {
+                        Toast.makeText(getActivity(), R.string.book_alread_exists, Toast.LENGTH_LONG).show();
+                    }
+                } else {
                     updateBook(book);
                     adapter.add(book);
                     books.add(book);
                     adapter.notifyDataSetChanged();
+                    Toast.makeText(getActivity(), R.string.book_alread_exists, Toast.LENGTH_LONG).show();
                 }
             }
         }

@@ -12,11 +12,12 @@ import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import info.patsch.ebl.R;
 
 public class BookController extends RecyclerView.ViewHolder implements View.OnClickListener {
+    private OnBookSelectedListener mOnBookSelectedListener;
+
     View cardView = null;
     ImageView thumbnailView = null;
     TextView titleView = null;
@@ -29,7 +30,7 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
     CheckBox ebookBox = null;
     ImageButton dropdownButton = null;
 
-    public BookController(View row, View.OnClickListener dropdownListener) {
+    public BookController(View row, View.OnClickListener dropdownListener, OnBookSelectedListener onBookSelectedListener) {
         super(row);
         cardView = row;
         thumbnailView = (ImageView) row.findViewById(R.id.thumbnail);
@@ -43,8 +44,15 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
         ebookBox = (CheckBox) row.findViewById(R.id.ebook);
         dropdownButton = (ImageButton) row.findViewById(R.id.edit_dropdown);
 
+        this.mOnBookSelectedListener = onBookSelectedListener;
+
         row.setOnClickListener(this);
-        dropdownButton.setOnClickListener(dropdownListener);
+        if (dropdownListener != null) {
+            dropdownButton.setOnClickListener(dropdownListener);
+        }
+        else {
+            dropdownButton.setVisibility(View.INVISIBLE);
+        }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             row.setOnTouchListener(new View.OnTouchListener() {
@@ -64,9 +72,9 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
 
     @Override
     public void onClick(View v) {
-            Toast.makeText(v.getContext(),
-                    String.format("Clicked on position %d", getAdapterPosition()),
-                    Toast.LENGTH_SHORT).show();
+        if (mOnBookSelectedListener != null) {
+            mOnBookSelectedListener.onBookSelected((Book)v.getTag());
+        }
 
     }
 
@@ -81,6 +89,7 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
             bookBox.setChecked(book.isBook());
             ebookBox.setChecked(book.isEBook());
             setImage(book);
+            cardView.setTag(book);
         }
         dropdownButton.setTag(book);
     }
@@ -95,6 +104,10 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
         else {
             thumbnailView.setVisibility(View.INVISIBLE);
         }
+    }
+
+    public interface OnBookSelectedListener {
+        void onBookSelected(Book book);
     }
 
 }

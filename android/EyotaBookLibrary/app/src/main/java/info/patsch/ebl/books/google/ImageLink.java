@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 /**
  * Created by patsch on 27.08.16.
  */
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ImageLink {
 
     private String thumbnail;
@@ -61,5 +61,19 @@ public class ImageLink {
 
     public void setExtraLarge(String extraLarge) {
         this.extraLarge = extraLarge;
+    }
+
+    public String getImageUrl() {
+        if (medium != null) {
+            return medium;
+        } else if (thumbnail != null) {
+            return thumbnail;
+        } else if (small != null) {
+            return small;
+        } else if (smallThumbnail != null) {
+            return smallThumbnail;
+        } else if (large != null) {
+            return large;
+        } else return extraLarge;
     }
 }

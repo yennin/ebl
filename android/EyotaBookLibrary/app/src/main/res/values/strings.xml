@@ -32,4 +32,14 @@
     <string name="validation_error_author">Author is mandatory</string>
     <string name="wrong_year_format">Wrong Year entry</string>
 
+    <string name="query">Query</string>
+    <string name="search">Search</string>
+
+    <string name="ff_url">http://www.fantasticfiction.co.uk</string>
+    <string name="ff_img_url">http://img1.fantasticfiction.co.uk/thumb</string>
+    <string name="no_results">No Books found</string>
+    <string name="new_book_added">New book added</string>
+    <string name="book_alread_exists">Book already exists</string>
+    <string name="title_activity_tabbed">TabbedActivity</string>
+    <string name="section_format">Hello World from section: %1$d</string>
 </resources>
