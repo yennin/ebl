@@ -14,6 +14,7 @@ import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,13 +49,15 @@ import info.patsch.ebl.books.search.BookSearchActivity;
 /**
  * Created by patsch on 22.08.16.
  */
-public class BookViewFragment extends RecyclerViewFragment implements FirebaseAuth.AuthStateListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+public class BookViewFragment extends RecyclerViewFragment implements FilterConstants, FirebaseAuth.AuthStateListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
     public static final String TAG = "BookViewFragment";
     private static final String STATE_QUERY = "state_query";
 
     public static final int EDIT_BOOK_REQUEST = 37;
     public final static int SEARCH_BOOK_REQUEST = 27;
+
+    private final static String ARG_FLAGS = "flags";
 
     private FirebaseAuth mAuth = null;
     private DatabaseReference mRef = null;
@@ -69,6 +72,29 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
 
     private boolean initialDataLoaded = false;
     private boolean isLoading = false;
+
+    private int mFlags = ALL;
+
+    public BookViewFragment() {
+    }
+
+    public static BookViewFragment newInstance(int flags) {
+        BookViewFragment fragment = new BookViewFragment();
+        Bundle args = new Bundle();
+        args.putInt(ARG_FLAGS, flags);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+        mFlags = getArguments().getInt(ARG_FLAGS);
+
+        return rootView;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -236,6 +262,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
                             books.add(book);
                         }
                         adapter.addAll(books);
+                        adapter.getFilter().filter("");
                         progressDialog.dismiss();
                         Toast.makeText(getActivity(), TextUtils.concat(getString(R.string.done_loading, books.size())), Toast.LENGTH_SHORT)
                                 .show();
@@ -446,25 +473,33 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
         protected FilterResults performFiltering(CharSequence constraint) {
             FilterResults results = new FilterResults();
 
-            if (!TextUtils.isEmpty(constraint)) {
+            Boolean readFlag = null;
+            Boolean bookFlag = null;
+            Boolean eBookFlag = null;
 
-                constraint = constraint.toString().toUpperCase();
-
-                List<Book> filteredBooks = new ArrayList<>();
-                for (Book book : books) {
-                    if (book.getAuthorName().toUpperCase().contains(constraint) ||
-                            book.getTitle().toUpperCase().contains(constraint) ||
-                            (book.getSeriesName() != null && book.getSeriesName().toUpperCase().contains(constraint))) {
-                        filteredBooks.add(book);
-                    }
+            if ((mFlags & ALL) != ALL) { // flag filter required
+                if ((mFlags & ANY_READ) != ANY_READ) { // readFlag filter required
+                    readFlag = (mFlags & READ) == READ;
                 }
-
-                results.count = filteredBooks.size();
-                results.values = filteredBooks;
-            } else {
-                results.count = books.size();
-                results.values = new ArrayList<>(books);
+                if ((mFlags & ANY_BOOK) != ANY_BOOK) { // bookFlag filter required
+                    bookFlag = (mFlags & BOOK) == BOOK;
+                }
+                if ((mFlags & ANY_EBOOK) != ANY_EBOOK) { // ebook filter required
+                    eBookFlag = (mFlags & EBOOK) == EBOOK;
+                }
             }
+
+            BookFilter filter = new BookFilter(constraint, readFlag, bookFlag, eBookFlag);
+
+            List<Book> filteredBooks = new ArrayList<>();
+            for (Book book : books) {
+                if (filter.accept(book)) {
+                    filteredBooks.add(book);
+                }
+            }
+
+            results.count = filteredBooks.size();
+            results.values = filteredBooks;
             return results;
         }
 
@@ -474,6 +509,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
             adapter.notifyDataSetChanged();
         }
     }
+
 
     private class DropdownListener implements View.OnClickListener {
         @Override
@@ -547,6 +583,44 @@ public class BookViewFragment extends RecyclerViewFragment implements FirebaseAu
                     Toast.makeText(getActivity(), R.string.book_alread_exists, Toast.LENGTH_LONG).show();
                 }
             }
+        }
+    }
+
+
+    class BookFilter {
+        private String query;
+        private Boolean read;
+        private Boolean book;
+        private Boolean eBook;
+
+        public BookFilter(CharSequence query, Boolean read, Boolean book, Boolean eBook) {
+            if (!TextUtils.isEmpty(query)) {
+
+                this.query = query.toString().toUpperCase();
+            }
+            this.read = read;
+            this.book = book;
+            this.eBook = eBook;
+        }
+
+        public boolean accept(Book testBook) {
+
+            if (read != null && read != testBook.isRead()) {
+                return false;
+            }
+            if (book != null && book != testBook.isBook()) {
+                return false;
+            }
+            if (eBook != null && eBook != testBook.isEBook()) {
+                return false;
+            }
+            if (query != null &&
+                    !testBook.getAuthorName().toUpperCase().contains(query) &&
+                    !testBook.getTitle().toUpperCase().contains(query) &&
+                    (testBook.getSeriesName() != null && !testBook.getSeriesName().toUpperCase().contains(query))) {
+                return false;
+            }
+            return true;
         }
     }
 }
