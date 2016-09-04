@@ -11,6 +11,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
@@ -31,6 +33,7 @@ import info.patsch.ebl.books.Book;
 import info.patsch.ebl.books.BookViewFragment;
 import info.patsch.ebl.books.FilterConstants;
 import info.patsch.ebl.books.ModelFragment;
+import info.patsch.ebl.books.events.BooksFilteredEvent;
 import info.patsch.ebl.books.events.BooksLoadedEvent;
 
 ;
@@ -41,6 +44,8 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
 
     private GoogleApiClient mClient;
     private ViewPager mViewPager;
+
+    private TextView mBookCount;
 
     private static final String MODEL = "model";
 
@@ -71,13 +76,13 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-
-
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+
+        mBookCount = (TextView)findViewById(R.id.book_count_bar);
     }
 
     private void setupPager(Set<Book> books) {
@@ -115,6 +120,18 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onBookLoaded(BooksLoadedEvent event) {
         setupPager(event.getBooks());
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onBooksFiltered(BooksFilteredEvent event) {
+        if (event.getCount() > 0) {
+            mBookCount.setText(getString(R.string.book_count, event.getCount()));
+            mBookCount.setVisibility(View.VISIBLE);
+        }
+        else {
+            mBookCount.setVisibility(View.GONE);
+        }
     }
 
     @Override

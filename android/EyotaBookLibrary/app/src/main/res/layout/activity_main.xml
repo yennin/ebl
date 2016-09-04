@@ -33,4 +33,16 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
 
+    <TextView
+        android:id="@+id/book_count_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Small"
+        android:background="@color/colorPrimaryDark"
+        android:text="@string/book_count"
+        android:textColor="@color/colorPrimaryLight"
+        android:gravity="center_horizontal"
+        android:visibility="gone"/>
+
 </android.support.design.widget.CoordinatorLayout>

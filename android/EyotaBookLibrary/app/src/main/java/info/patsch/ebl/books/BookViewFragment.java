@@ -36,6 +36,7 @@ import info.patsch.ebl.books.events.BookAddedEvent;
 import info.patsch.ebl.books.events.BookDBRemoveEvent;
 import info.patsch.ebl.books.events.BookDBUpdateEvent;
 import info.patsch.ebl.books.events.BookRemovedEvent;
+import info.patsch.ebl.books.events.BooksFilteredEvent;
 import info.patsch.ebl.books.search.BookSearchActivity;
 
 /**
@@ -84,8 +85,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
         }
 
         adapter.addAll(mBooks);
-        adapter.getFilter().filter(initialQuery);
-
         return rootView;
     }
 
@@ -351,6 +350,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
         protected void publishResults(CharSequence constraint, final FilterResults results) {
             adapter.replaceAll((List<Book>) results.values);
             adapter.notifyDataSetChanged();
+            EventBus.getDefault().postSticky(new BooksFilteredEvent(results.count));
         }
     }
 
@@ -431,8 +431,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
     public void setUserVisibleHint(boolean isVisibleToUser) {
         super.setUserVisibleHint(isVisibleToUser);
         if (adapter != null && isVisibleToUser) {
-            adapter.getFilter().filter("");
             adapter.notifyDataSetChanged();
+            adapter.getFilter().filter("");
         }
     }
 
