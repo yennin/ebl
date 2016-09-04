@@ -412,8 +412,10 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onBookAdded(BookAddedEvent event) {
-        this.mBooks.add(event.getBook());
-        adapter.add(event.getBook());
+        Book book = event.getBook();
+        this.mBooks.remove(book);
+        this.mBooks.add(book);
+        adapter.add(book);
         adapter.notifyDataSetChanged();
     }
 

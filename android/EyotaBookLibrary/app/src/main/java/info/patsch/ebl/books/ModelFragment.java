@@ -24,6 +24,7 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.HashSet;
 import java.util.Set;
+
 import info.patsch.ebl.R;
 import info.patsch.ebl.books.events.BookAddedEvent;
 import info.patsch.ebl.books.events.BookDBNewEvent;
@@ -178,15 +179,11 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
         EventBus.getDefault().register(this);
     }
 
-    private boolean addImage(Book book) {
-        if (mBooks.contains(book)) {
-            return false;
-        }
+    private void addImage(Book book) {
         if (book.getImage() != null) {
             book.setImageEncoded(Base64.encodeToString(book.getImage(), Base64.URL_SAFE));
         }
         book.setImage(null);
-        return true;
     }
 
     private void storeNewBook(Book book) {
@@ -216,15 +213,17 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
         }
 
         if (book.getId() == null) { //new book
-            if (addImage(book)) {
-                storeNewBook(event.getBook());
-                Toast.makeText(getActivity(), R.string.new_book_added, Toast.LENGTH_LONG).show();
-            } else {
+            if (checkExisting(book)) {
                 Toast.makeText(getActivity(), R.string.book_alread_exists, Toast.LENGTH_LONG).show();
             }
-        } else {
+            else {
+                addImage(book);
+                storeNewBook(event.getBook());
+                Toast.makeText(getActivity(), R.string.new_book_added, Toast.LENGTH_LONG).show();
+            }
+        }  else {
             updateBook(book);
-            Toast.makeText(getActivity(), R.string.book_alread_exists, Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), R.string.book_updated, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -245,5 +244,30 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
 
     public Set<Book> getBooks() {
         return mBooks;
+    }
+
+
+    private boolean checkExisting(Book newBook) {
+        ExistingBookFilter filter = new ExistingBookFilter(newBook);
+        for (Book book : mBooks) {
+            if (filter.accept(book)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    class ExistingBookFilter {
+        private Book newBook;
+
+        public ExistingBookFilter(Book newBook) {
+            this.newBook = newBook;
+        }
+
+        public boolean accept(Book testBook) {
+            return newBook.getTitle().equals(testBook.getTitle())
+                    && newBook.getAuthorName().equals(testBook.getAuthorName())
+                    && (newBook.getSeriesName() != null ? newBook.getSeriesName().equals(testBook.getSeriesName()) : testBook.getSeriesName() == null);
+        }
     }
 }

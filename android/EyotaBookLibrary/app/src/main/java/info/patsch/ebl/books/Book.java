@@ -235,18 +235,14 @@ public class Book implements Comparable<Book>, Parcelable {
 
         Book book = (Book) o;
 
-        if (title != null ? !title.equals(book.title) : book.title != null) return false;
-        return authorName != null ? authorName.equals(book.authorName) : book.authorName == null;
+        return id != null ? id.equals(book.id) : book.id == null;
 
     }
 
     @Override
     public int hashCode() {
-        int result = title != null ? title.hashCode() : 0;
-        result = 31 * result + (authorName != null ? authorName.hashCode() : 0);
-        return result;
+        return id != null ? id.hashCode() : 0;
     }
-
 
     @Override
     public int compareTo(Book that) {
