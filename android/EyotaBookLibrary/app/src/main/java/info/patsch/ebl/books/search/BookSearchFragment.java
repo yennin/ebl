@@ -1,5 +1,6 @@
 package info.patsch.ebl.books.search;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -20,6 +21,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
 
 import java.io.ByteArrayOutputStream;
@@ -60,6 +62,8 @@ public class BookSearchFragment extends RecyclerViewFragment
     private SortedList<Book> model = null;
     private BookAdapter mAdapter;
 
+    private ProgressDialog mProgressDialog = null;
+
     public static BookSearchFragment newInstance() {
         BookSearchFragment fragment = new BookSearchFragment();
         Bundle args = new Bundle();
@@ -73,8 +77,6 @@ public class BookSearchFragment extends RecyclerViewFragment
 
         setRetainInstance(true);
 
-        if (getArguments() != null) {
-        }
         mGoogleApiKey = getString(R.string.google_api_key);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl("https://www.googleapis.com")
@@ -152,12 +154,12 @@ public class BookSearchFragment extends RecyclerViewFragment
     }
 
     public void onActivityResult(int request, int result, Intent intent) {
-
+        mProgressDialog.dismiss();;
         IntentResult scan = IntentIntegrator.parseActivityResult(request, result, intent);
         if (scan != null && scan.getFormatName() != null) {
             String formatName = scan.getFormatName();
-            for (int i = 0; i < ISBN_FORMATS.length; i++) {
-                if (ISBN_FORMATS[i].equals(formatName)) {
+            for (String ISBN_FORMAT : ISBN_FORMATS) {
+                if (ISBN_FORMAT.equals(formatName)) {
 
                     executeSearch(scan.getContents());
                 }
@@ -170,11 +172,13 @@ public class BookSearchFragment extends RecyclerViewFragment
 
     private void executeSearch(String text) {
         String query = getString(R.string.isbn_query, text);
+        mProgressDialog = startSearching();
         mBooksService.searchBooks(text, mGoogleApiKey).enqueue(this);
     }
 
     @Override
     public void onResponse(Call<BookSearchResult> call, Response<BookSearchResult> response) {
+        mProgressDialog.dismiss();
         if (response.isSuccessful()) {
             final BookSearchResult searchResult = response.body();
             List<Book> books = new ArrayList<>();
@@ -206,7 +210,7 @@ public class BookSearchFragment extends RecyclerViewFragment
         if (TextUtils.isEmpty(imageUrl)) {
             return null;
         }
-        Bitmap bitmap = null;
+        Bitmap bitmap;
         try {
             bitmap = Picasso.with(getActivity()).load(imageUrl).get();
 
@@ -214,6 +218,9 @@ public class BookSearchFragment extends RecyclerViewFragment
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
             byte[] byteArray = stream.toByteArray();
             return Base64.encodeToString(byteArray, Base64.URL_SAFE);
+        } catch (Downloader.ResponseException e) {
+            Log.w(TAG, e.getMessage(), e);
+            return null;
         } catch (IOException e) {
             Log.w(TAG, e.getMessage(), e);
             return null;
@@ -250,6 +257,7 @@ public class BookSearchFragment extends RecyclerViewFragment
 
     @Override
     public void onFailure(Call call, Throwable t) {
+        mProgressDialog.dismiss();;
         Toast.makeText(getActivity(), t.getMessage(),
                 Toast.LENGTH_LONG).show();
         Log.e(getClass().getSimpleName(),
@@ -259,6 +267,7 @@ public class BookSearchFragment extends RecyclerViewFragment
 
     @Override
     public void onSearchClicked(String query) {
+        mProgressDialog = startSearching();
         FFSearch search = new FFSearch(getActivity(), this);
         search.searchBook(query);
     }
@@ -319,6 +328,7 @@ public class BookSearchFragment extends RecyclerViewFragment
             protected void onPostExecute(Void nothing) {
                 mAdapter.replaceAll(books);
                 mAdapter.notifyDataSetChanged();
+                mProgressDialog.dismiss();
             }
         };
 
@@ -327,6 +337,7 @@ public class BookSearchFragment extends RecyclerViewFragment
 
     @Override
     public void onNoResults() {
+        mProgressDialog.dismiss();
         Toast.makeText(getActivity(), R.string.no_results, Toast.LENGTH_LONG).show();
     }
 
@@ -365,13 +376,6 @@ public class BookSearchFragment extends RecyclerViewFragment
             model.endBatchedUpdates();
         }
 
-        public void clear() {
-            model.beginBatchedUpdates();
-            results.clear();
-            model.clear();
-            model.endBatchedUpdates();
-        }
-
         public void replaceAll(List<Book> books) {
             model.beginBatchedUpdates();
             results.clear();
@@ -382,11 +386,16 @@ public class BookSearchFragment extends RecyclerViewFragment
         }
     }
 
+    private ProgressDialog startSearching() {
+        ProgressDialog progress = new ProgressDialog(getContext());
+        progress.setTitle("Searching");
+        progress.setMessage("Wait while searching...");
+        progress.show();
+        return progress;
+    }
 
     public interface OnFragmentInteractionListener {
 
         void onBookSelected(Book book);
     }
-
-
 }

@@ -1,5 +1,6 @@
 package info.patsch.ebl;
 
+import android.app.ProgressDialog;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.TabLayout;
@@ -20,26 +21,46 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.FirebaseDatabase;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.Set;
+
+import info.patsch.ebl.books.Book;
 import info.patsch.ebl.books.BookViewFragment;
 import info.patsch.ebl.books.FilterConstants;
+import info.patsch.ebl.books.ModelFragment;
+import info.patsch.ebl.books.events.BooksLoadedEvent;
+
+;
 
 public class MainActivity extends AppCompatActivity implements FilterConstants {
 
     private final static int RC_SIGN_IN = 27;
 
     private GoogleApiClient mClient;
-    private SectionsPagerAdapter mSectionsPagerAdapter;
     private ViewPager mViewPager;
+
+    private static final String MODEL = "model";
+
+    private ModelFragment model = null;
+
+    ProgressDialog mProgressDialog = null;
+
+    private static boolean isDbInitialized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        try {
-            FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-        }
-        catch (DatabaseException ex) {
-            Log.w("MainActivity", ex.getMessage(), ex);
+        if (!isDbInitialized) {
+            try {
+                FirebaseDatabase.getInstance().setPersistenceEnabled(true);
+                isDbInitialized = true;
+            } catch (DatabaseException ex) {
+                Log.w("MainActivity", ex.getMessage(), ex);
+            }
         }
 
         // ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -50,16 +71,56 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        // Create the adapter that will return a fragment for each of the three
-        // primary sections of the activity.
-        mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
+
 
         // Set up the ViewPager with the sections adapter.
         mViewPager = (ViewPager) findViewById(R.id.container);
-        mViewPager.setAdapter(mSectionsPagerAdapter);
 
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
+    }
+
+    private void setupPager(Set<Book> books) {
+        // Create the adapter that will return a fragment for each of the three
+        // primary sections of the activity.
+        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), books);
+        mViewPager.setAdapter(sectionsPagerAdapter);
+        mProgressDialog.dismiss();;
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        EventBus.getDefault().register(this);
+        mProgressDialog = startLoading();
+
+        if (model == null) {
+            ModelFragment mfrag =
+                    (ModelFragment) getSupportFragmentManager().findFragmentByTag(MODEL);
+
+            if (mfrag == null) {
+                mfrag = new ModelFragment();
+
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .add(mfrag, MODEL)
+                        .commit();
+            } else if (mfrag.getBooks() != null) {
+                EventBus.getDefault().post(new BooksLoadedEvent(mfrag.getBooks()));
+            }
+        }
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onBookLoaded(BooksLoadedEvent event) {
+        setupPager(event.getBooks());
+    }
+
+    @Override
+    protected void onPause() {
+        EventBus.getDefault().unregister(this);
+        super.onPause();
     }
 
     @Override
@@ -125,30 +186,30 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
                 RC_SIGN_IN);
     }
 
-
     public boolean isSignedIn() {
         return (FirebaseAuth.getInstance().getCurrentUser() != null);
     }
 
-
-
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        public SectionsPagerAdapter(FragmentManager fm) {
+        private Set<Book> books = null;
+
+        public SectionsPagerAdapter(FragmentManager fm, Set<Book> books) {
             super(fm);
+            this.books = books;
         }
 
         @Override
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return BookViewFragment.newInstance(ALL);
+                    return BookViewFragment.newInstance(books, ALL);
                 case 1:
-                    return BookViewFragment.newInstance(READ | ANY_EBOOK | ANY_BOOK);
+                    return BookViewFragment.newInstance(books, READ | ANY_EBOOK | ANY_BOOK);
                 case 2:
-                    return BookViewFragment.newInstance(ANY_BOOK | ANY_EBOOK);
+                    return BookViewFragment.newInstance(books, ANY_BOOK | ANY_EBOOK);
             }
-            return BookViewFragment.newInstance(ALL);
+            return BookViewFragment.newInstance(books, ALL);
         }
 
         @Override
@@ -170,4 +231,11 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         }
     }
 
+    private ProgressDialog startLoading() {
+        ProgressDialog progress = new ProgressDialog(this);
+        progress.setTitle("Loading");
+        progress.setMessage("Wait while loading...");
+        progress.show();
+        return progress;
+    }
 }

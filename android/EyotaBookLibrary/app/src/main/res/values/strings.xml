@@ -42,4 +42,5 @@
     <string name="book_alread_exists">Book already exists</string>
     <string name="title_activity_tabbed">TabbedActivity</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="book_updated">Book updated</string>
 </resources>

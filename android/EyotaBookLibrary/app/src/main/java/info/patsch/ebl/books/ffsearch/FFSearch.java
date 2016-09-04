@@ -1,6 +1,5 @@
 package info.patsch.ebl.books.ffsearch;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.util.Log;
 
@@ -27,7 +26,6 @@ public class FFSearch implements Callback<ResponseBody> {
 
     private Context mContext = null;
     private OnSearchResultListener mListener;
-    private ProgressDialog mProgressDialog;
 
     public FFSearch(Context context, OnSearchResultListener listener) {
         this.mContext = context;
@@ -40,7 +38,6 @@ public class FFSearch implements Callback<ResponseBody> {
                 .build();
         FFBooksService booksService = retrofit.create(FFBooksService.class);
         booksService.searchBooks(query).enqueue(this);
-        mProgressDialog = startLoading();
     }
 
     @Override
@@ -67,8 +64,6 @@ public class FFSearch implements Callback<ResponseBody> {
         } catch (IOException ex) {
             Log.w("FFSearch", "Failed to load searchresult", ex);
             notifyNoResult();
-        } finally {
-            mProgressDialog.dismiss();
         }
     }
 
@@ -117,14 +112,5 @@ public class FFSearch implements Callback<ResponseBody> {
     public void onFailure(Call<ResponseBody> call, Throwable t) {
         Log.w("FFSearch", "Failed to load searchresult", t);
         notifyNoResult();
-        mProgressDialog.dismiss();
-    }
-
-    private ProgressDialog startLoading() {
-        ProgressDialog progress = new ProgressDialog(mContext);
-        progress.setTitle("Searching");
-        progress.setMessage("Wait while searching...");
-        progress.show();
-        return progress;
     }
 }

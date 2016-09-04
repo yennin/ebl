@@ -4,6 +4,8 @@ package info.patsch.ebl.books.ffsearch;
  * Created by patsch on 02.09.16.
  */
 
+import android.text.Html;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
@@ -36,7 +38,7 @@ public class Hit {
     }
 
     public String getTitle() {
-        return getFirstOrNull(data.getTitle());
+        return decodeUrl(getFirstOrNull(data.getTitle()));
     }
 
     public String getPfn() {
@@ -60,11 +62,11 @@ public class Hit {
     }
 
     public String getAuthorName() {
-        return splitAuthorInfo(1);
+        return decodeUrl(splitAuthorInfo(1));
     }
 
     public String getSeriesName() {
-        return splitSeriesInfo(0);
+        return decodeUrl(splitSeriesInfo(0));
     }
 
     public String getSeriesNumber() {
@@ -96,5 +98,12 @@ public class Hit {
             return null;
         }
         return list.get(0);
+    }
+
+    private String decodeUrl(String in) {
+        if (in == null) return null;
+
+        return Html.fromHtml(in).toString();
+
     }
 }

@@ -1,10 +1,8 @@
 package info.patsch.ebl.books;
 
-import android.app.Activity;
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
+import android.os.Parcelable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.LinearLayoutManager;
@@ -12,8 +10,6 @@ import android.support.v7.widget.PopupMenu;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.SearchView;
 import android.text.TextUtils;
-import android.util.Base64;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -22,19 +18,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Filter;
 import android.widget.Filterable;
-import android.widget.Toast;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -44,44 +32,42 @@ import java.util.Set;
 import info.patsch.ebl.R;
 import info.patsch.ebl.RecyclerViewFragment;
 import info.patsch.ebl.books.edit.EditBookActivity;
+import info.patsch.ebl.books.events.BookAddedEvent;
+import info.patsch.ebl.books.events.BookDBRemoveEvent;
+import info.patsch.ebl.books.events.BookDBUpdateEvent;
+import info.patsch.ebl.books.events.BookRemovedEvent;
 import info.patsch.ebl.books.search.BookSearchActivity;
 
 /**
  * Created by patsch on 22.08.16.
  */
-public class BookViewFragment extends RecyclerViewFragment implements FilterConstants, FirebaseAuth.AuthStateListener, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
+public class BookViewFragment extends RecyclerViewFragment implements FilterConstants, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
     public static final String TAG = "BookViewFragment";
     private static final String STATE_QUERY = "state_query";
 
-    public static final int EDIT_BOOK_REQUEST = 37;
-    public final static int SEARCH_BOOK_REQUEST = 27;
-
     private final static String ARG_FLAGS = "flags";
+    private static final String ARG_BOOKS = "books";
 
-    private FirebaseAuth mAuth = null;
-    private DatabaseReference mRef = null;
-    private DatabaseReference mBookRef = null;
+    public static final int EDIT_BOOK_REQUEST = 37;
 
-
+    private Set<Book> mBooks = null;
     private SortedList<Book> model = null;
-    private Set<Book> books = null;
     private BookAdapter adapter = null;
+
     private SearchView mSearchView = null;
     private CharSequence initialQuery;
-
-    private boolean initialDataLoaded = false;
-    private boolean isLoading = false;
 
     private int mFlags = ALL;
 
     public BookViewFragment() {
     }
 
-    public static BookViewFragment newInstance(int flags) {
+    public static BookViewFragment newInstance(Set<Book> books, int flags) {
         BookViewFragment fragment = new BookViewFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_FLAGS, flags);
+        args.putParcelableArrayList(ARG_BOOKS, new ArrayList<>(books));
         fragment.setArguments(args);
         return fragment;
     }
@@ -92,6 +78,13 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         mFlags = getArguments().getInt(ARG_FLAGS);
+        ArrayList<Parcelable> parcelables = getArguments().getParcelableArrayList(ARG_BOOKS);
+        for (Parcelable parcelable : parcelables) {
+            mBooks.add((Book) parcelable);
+        }
+
+        adapter.addAll(mBooks);
+        adapter.getFilter().filter(initialQuery);
 
         return rootView;
     }
@@ -102,9 +95,9 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
 
         setRetainInstance(true);
 
+        mBooks = new HashSet<>();
         adapter = new BookAdapter();
         model = new SortedList<>(Book.class, sortCallback);
-        books = new HashSet<>();
     }
 
     @Override
@@ -114,25 +107,14 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
         setLayoutManager(new LinearLayoutManager(getActivity()));
         setAdapter(adapter);
 
-        mAuth = FirebaseAuth.getInstance();
-        mAuth.addAuthStateListener(this);
-
         FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getActivity(), BookSearchActivity.class);
-                startActivityForResult(intent, SEARCH_BOOK_REQUEST);
+                getActivity().startActivity(intent);
             }
         });
-    }
-
-    @Override
-    public void onDestroy() {
-        if (mAuth != null) {
-            mAuth.removeAuthStateListener(this);
-        }
-        super.onDestroy();
     }
 
     @Override
@@ -175,113 +157,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
         }
 
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-        FirebaseUser user = firebaseAuth.getCurrentUser();
-        if (user != null) {
-            // User is signed in
-            Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-            loadBooks();
-
-        } else {
-            // User is signed out
-            Log.d(TAG, "onAuthStateChanged:signed_out");
-        }
-    }
-
-    private void loadBooks() {
-        if (initialDataLoaded || isLoading) {
-            return;
-        }
-        final ProgressDialog progressDialog = startLoading();
-        isLoading = true;
-        FirebaseUser currentUser = mAuth.getCurrentUser();
-        mRef = FirebaseDatabase.getInstance().getReference();
-        mBookRef = mRef.child("users").child(currentUser.getUid()).child("books");
-        mBookRef.keepSynced(true);
-
-        mBookRef.orderByChild("title").addChildEventListener(
-                new ChildEventListener() {
-                    @Override
-                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                        if (initialDataLoaded) {
-                            Book book = dataSnapshot.getValue(Book.class);
-                            books.add(book);
-                            adapter.add(book);
-                            adapter.notifyDataSetChanged();
-                        }
-                    }
-
-                    @Override
-                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-                        if (initialDataLoaded) {
-                            Book book = dataSnapshot.getValue(Book.class);
-                            books.add(book);
-                            adapter.add(book);
-                            adapter.notifyDataSetChanged();
-                        }
-                    }
-
-                    @Override
-                    public void onChildRemoved(DataSnapshot dataSnapshot) {
-                        if (initialDataLoaded) {
-                            Book book = dataSnapshot.getValue(Book.class);
-                            books.remove(book);
-                            adapter.remove(book);
-                            adapter.notifyDataSetChanged();
-                        }
-                    }
-
-                    @Override
-                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-                        if (initialDataLoaded) {
-                            // should not happen, ignore
-                            Book book = dataSnapshot.getValue(Book.class);
-                            Log.w(TAG, "Book moved" + book.getTitle());
-                        }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    }
-                });
-
-        mBookRef.orderByChild("title").addListenerForSingleValueEvent(
-                new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        if (initialDataLoaded) {
-                            return;
-                        }
-                        Iterable<DataSnapshot> children = dataSnapshot.getChildren();
-                        for (DataSnapshot child : children) {
-                            Book book = child.getValue(Book.class);
-                            books.add(book);
-                        }
-                        adapter.addAll(books);
-                        adapter.getFilter().filter("");
-                        progressDialog.dismiss();
-                        Toast.makeText(getActivity(), TextUtils.concat(getString(R.string.done_loading, books.size())), Toast.LENGTH_SHORT)
-                                .show();
-                        initialDataLoaded = true;
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                        Log.w(TAG, "getUser:onCancelled", databaseError.toException());
-                    }
-                });
-    }
-
-    private ProgressDialog startLoading() {
-        ProgressDialog progress = new ProgressDialog(getActivity());
-        progress.setTitle("Loading");
-        progress.setMessage("Wait while loading...");
-        progress.show();
-        return progress;
     }
 
     private SortedList.Callback<Book> sortCallback = new SortedList.Callback<Book>() {
@@ -356,7 +231,9 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
 
         public void addAll(Set<Book> books) {
             model.beginBatchedUpdates();
+            model.clear();
             model.addAll(books);
+            filterList.clear();
             filterList.addAll(books);
             Collections.sort(filterList);
             model.endBatchedUpdates();
@@ -414,59 +291,25 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
         if (mSearchView != null && !mSearchView.isIconified()) {
             state.putCharSequence(STATE_QUERY, mSearchView.getQuery());
         }
-
-        //state.putStringArrayList(STATE_MODEL, words);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-        if (savedInstanceState == null) {
-        } else {
+        if (savedInstanceState != null) {
             initialQuery = savedInstanceState.getCharSequence(STATE_QUERY);
         }
         setHasOptionsMenu(true);
     }
 
-    private void loadBooksFromFile() {
-        ObjectMapper mapper = new ObjectMapper();
-        try (InputStream is = getResources().openRawResource(R.raw.books)) {
-            Book[] books = mapper.readValue(is, Book[].class);
-            int i = 0;
-            for (Book book : books) {
-                book.setId(i++ + "");
-                addBook(book);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private void deleteBook(Book book) {
-        adapter.remove(book);
-        mBookRef.child(book.getId()).removeValue();
+        EventBus.getDefault().post(new BookDBRemoveEvent(book));
     }
 
     private void updateBook(Book book) {
-        mBookRef.child(book.getId()).setValue(book);
+        EventBus.getDefault().postSticky(new BookDBUpdateEvent(book));
     }
 
-    private boolean addBook(Book book) {
-        if (books.contains(book)) {
-            return false;
-        }
-        if (book.getImage() != null) {
-            book.setImageEncoded(Base64.encodeToString(book.getImage(), Base64.URL_SAFE));
-        }
-        book.setImage(null);
-        DatabaseReference childRef = mBookRef.push();
-        book.setId(childRef.getKey());
-        childRef.setValue(book);
-        books.add(book);
-        adapter.add(book);
-        adapter.notifyDataSetChanged();
-        return true;
-    }
 
     private class CustomFilter extends Filter {
         @Override
@@ -492,7 +335,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
             BookFilter filter = new BookFilter(constraint, readFlag, bookFlag, eBookFlag);
 
             List<Book> filteredBooks = new ArrayList<>();
-            for (Book book : books) {
+            for (Book book : mBooks) {
                 if (filter.accept(book)) {
                     filteredBooks.add(book);
                 }
@@ -504,6 +347,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
         }
 
         @Override
+        @SuppressWarnings("unchecked")
         protected void publishResults(CharSequence constraint, final FilterResults results) {
             adapter.replaceAll((List<Book>) results.values);
             adapter.notifyDataSetChanged();
@@ -552,40 +396,45 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
     private void editBookInfo(Book book) {
         Intent intent = new Intent(getActivity(), EditBookActivity.class);
         intent.putExtra(Book.BOOK_TAG, book);
-        startActivityForResult(intent, EDIT_BOOK_REQUEST);
+        startActivity(intent);
     }
 
-    public void onActivityResult(int requestCode, int resultCode,
-                                 Intent data) {
-        if (resultCode == Activity.RESULT_OK) {
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+    }
 
-            if (requestCode == EDIT_BOOK_REQUEST || requestCode == SEARCH_BOOK_REQUEST) {
-                Book book = data.getParcelableExtra(Book.BOOK_TAG);
-                if (TextUtils.isEmpty(book.getTitle())) {
-                    Toast.makeText(getActivity(), R.string.validation_error_title, Toast.LENGTH_LONG).show();
-                    return;
-                } else if (TextUtils.isEmpty(book.getAuthorName())) {
-                    Toast.makeText(getActivity(), R.string.validation_error_author, Toast.LENGTH_LONG).show();
-                    return;
-                }
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+    }
 
-                if (book.getId() == null) { //new book
-                    if (addBook(book)) {
-                        Toast.makeText(getActivity(), R.string.new_book_added, Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(getActivity(), R.string.book_alread_exists, Toast.LENGTH_LONG).show();
-                    }
-                } else {
-                    updateBook(book);
-                    adapter.add(book);
-                    books.add(book);
-                    adapter.notifyDataSetChanged();
-                    Toast.makeText(getActivity(), R.string.book_alread_exists, Toast.LENGTH_LONG).show();
-                }
-            }
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onBookAdded(BookAddedEvent event) {
+        this.mBooks.add(event.getBook());
+        adapter.add(event.getBook());
+        adapter.notifyDataSetChanged();
+    }
+
+    @SuppressWarnings("unused")
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onBookRemoved(BookRemovedEvent event) {
+        this.mBooks.remove(event.getBook());
+        adapter.remove(event.getBook());
+        adapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if (adapter != null && isVisibleToUser) {
+            adapter.getFilter().filter("");
+            adapter.notifyDataSetChanged();
         }
     }
-
 
     class BookFilter {
         private String query;
@@ -605,6 +454,14 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
 
         public boolean accept(Book testBook) {
 
+            if (query != null) {
+                if (!testBook.getAuthorName().toUpperCase().contains(query) &&
+                        !testBook.getTitle().toUpperCase().contains(query) &&
+                        !(testBook.getSeriesName() != null && testBook.getSeriesName().toUpperCase().contains(query))) {
+                    return false;
+                }
+            }
+
             if (read != null && read != testBook.isRead()) {
                 return false;
             }
@@ -614,12 +471,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
             if (eBook != null && eBook != testBook.isEBook()) {
                 return false;
             }
-            if (query != null &&
-                    !testBook.getAuthorName().toUpperCase().contains(query) &&
-                    !testBook.getTitle().toUpperCase().contains(query) &&
-                    (testBook.getSeriesName() != null && !testBook.getSeriesName().toUpperCase().contains(query))) {
-                return false;
-            }
+
             return true;
         }
     }

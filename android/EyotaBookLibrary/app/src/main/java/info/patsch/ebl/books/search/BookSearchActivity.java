@@ -1,12 +1,12 @@
 package info.patsch.ebl.books.search;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import org.greenrobot.eventbus.EventBus;
+
 import info.patsch.ebl.books.Book;
-import info.patsch.ebl.books.BookViewFragment;
+import info.patsch.ebl.books.events.BookDBNewEvent;
 
 public class BookSearchActivity extends AppCompatActivity implements BookSearchFragment.OnFragmentInteractionListener {
 
@@ -23,10 +23,7 @@ public class BookSearchActivity extends AppCompatActivity implements BookSearchF
 
     @Override
     public void onBookSelected(Book book) {
-        Intent resultData = new Intent();
-        resultData.putExtra(Book.BOOK_TAG, book);
-        setResult(Activity.RESULT_OK, resultData);
-        finishActivity(BookViewFragment.SEARCH_BOOK_REQUEST);
+        EventBus.getDefault().postSticky(new BookDBNewEvent(book));
         finish();
     }
 }

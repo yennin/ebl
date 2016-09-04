@@ -1,12 +1,12 @@
 package info.patsch.ebl.books.edit;
 
-import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import org.greenrobot.eventbus.EventBus;
+
 import info.patsch.ebl.books.Book;
-import info.patsch.ebl.books.BookViewFragment;
+import info.patsch.ebl.books.events.BookDBUpdateEvent;
 
 public class EditBookActivity extends AppCompatActivity implements EditBookFragment.OnFragmentInteractionListener {
 
@@ -25,10 +25,7 @@ public class EditBookActivity extends AppCompatActivity implements EditBookFragm
 
     @Override
     public void onReturnResult(Book book) {
-        Intent resultData = new Intent();
-        resultData.putExtra(Book.BOOK_TAG, book);
-        setResult(Activity.RESULT_OK, resultData);
-        finishActivity(BookViewFragment.EDIT_BOOK_REQUEST);
+        EventBus.getDefault().postSticky(new BookDBUpdateEvent(book));
         finish();
     }
 }
