@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
-/**
- * Created by patsch on 27.08.16.
- */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class BookSearchResult {
     private String kind;

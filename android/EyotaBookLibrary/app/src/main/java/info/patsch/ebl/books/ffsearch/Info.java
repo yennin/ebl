@@ -2,9 +2,6 @@ package info.patsch.ebl.books.ffsearch;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * Created by patsch on 02.09.16.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Info {
 

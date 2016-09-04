@@ -6,9 +6,6 @@ import java.util.Collection;
 
 import info.patsch.ebl.books.Book;
 
-/**
- * Created by patsch on 02.09.16.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SearchStatus {
     public Collection<Book> books;

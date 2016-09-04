@@ -1,9 +1,5 @@
 package info.patsch.ebl.books.ffsearch;
 
-/**
- * Created by patsch on 02.09.16.
- */
-
 import android.text.Html;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

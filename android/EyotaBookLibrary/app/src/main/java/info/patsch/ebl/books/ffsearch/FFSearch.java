@@ -19,9 +19,6 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-/**
- * Created by patsch on 02.09.16.
- */
 public class FFSearch implements Callback<ResponseBody> {
 
     private Context mContext = null;

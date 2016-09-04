@@ -1,8 +1,5 @@
 package info.patsch.ebl.books;
 
-/**
- * Created by patsch on 02.09.16.
- */
 public interface FilterConstants {
     int BOOK = 1;
     int EBOOK = 2;

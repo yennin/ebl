@@ -4,7 +4,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -24,7 +23,6 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
-import com.squareup.picasso.Target;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -172,7 +170,6 @@ public class BookSearchFragment extends RecyclerViewFragment
     }
 
     private void executeSearch(String text) {
-        String query = getString(R.string.isbn_query, text);
         mProgressDialog = startSearching();
         mBooksService.searchBooks(text, mGoogleApiKey).enqueue(this);
     }
@@ -397,32 +394,5 @@ public class BookSearchFragment extends RecyclerViewFragment
     public interface OnFragmentInteractionListener {
 
         void onBookSelected(Book book);
-    }
-
-    private class PictureCallback implements Target {
-
-        private Book book;
-
-        public PictureCallback(Book book) {
-            this.book = book;
-        }
-
-        @Override
-        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
-            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
-            byte[] byteArray = stream.toByteArray();
-            book.setImageEncoded(Base64.encodeToString(byteArray, Base64.URL_SAFE));
-        }
-
-        @Override
-        public void onBitmapFailed(Drawable errorDrawable) {
-
-        }
-
-        @Override
-        public void onPrepareLoad(Drawable placeHolderDrawable) {
-
-        }
     }
 }

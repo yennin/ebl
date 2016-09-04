@@ -2,12 +2,10 @@ package info.patsch.ebl.books;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.annotation.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * Created by patsch on 21.08.16.
- */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class Book implements Comparable<Book>, Parcelable {
     public final static String BOOK_TAG = "book";
@@ -245,7 +243,7 @@ public class Book implements Comparable<Book>, Parcelable {
     }
 
     @Override
-    public int compareTo(Book that) {
+    public int compareTo(@NonNull Book that) {
         if (this == that) return 0;
         if (this.getTitle().equals(that.getTitle())) {
             return this.getAuthorName().compareTo(that.getAuthorName());

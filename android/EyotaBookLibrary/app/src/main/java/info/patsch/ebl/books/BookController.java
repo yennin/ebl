@@ -82,7 +82,7 @@ public class BookController extends RecyclerView.ViewHolder implements View.OnCl
         if (book.getTitle() != null) {
             titleView.setText(book.getTitle());
             authorView.setText(book.getAuthorName());
-            yearView.setText(book.getYear()+"");
+            yearView.setText(String.valueOf(book.getYear()));
             seriesView.setText(book.getSeriesName());
             seriesNumberView.setText(book.getSeriesNumber());
             readBox.setChecked(book.isRead());

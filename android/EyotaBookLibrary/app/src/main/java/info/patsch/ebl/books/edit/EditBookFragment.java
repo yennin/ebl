@@ -1,7 +1,6 @@
 package info.patsch.ebl.books.edit;
 
 import android.content.Context;
-import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -22,7 +21,6 @@ import android.widget.Toast;
 
 import info.patsch.ebl.R;
 import info.patsch.ebl.books.Book;
-import info.patsch.ebl.books.search.BookSearchActivity;
 import info.patsch.ebl.databinding.FragmentEditBookBinding;
 
 

@@ -2,9 +2,6 @@ package info.patsch.ebl.books.google;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
-/**
- * Created by patsch on 27.08.16.
- */
 @JsonIgnoreProperties(ignoreUnknown=true)
 public class BookItems {
     private String kind;

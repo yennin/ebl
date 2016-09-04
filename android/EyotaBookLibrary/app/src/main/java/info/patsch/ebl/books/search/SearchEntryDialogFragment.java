@@ -11,9 +11,6 @@ import android.widget.EditText;
 
 import info.patsch.ebl.R;
 
-/**
- * Created by patsch on 02.09.16.
- */
 public class SearchEntryDialogFragment extends DialogFragment implements DialogInterface.OnClickListener {
 
     private View form = null;

@@ -3,7 +3,6 @@ package info.patsch.ebl.books;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -37,11 +36,7 @@ import info.patsch.ebl.books.events.BookDBRemoveEvent;
 import info.patsch.ebl.books.events.BookDBUpdateEvent;
 import info.patsch.ebl.books.events.BookRemovedEvent;
 import info.patsch.ebl.books.events.BooksFilteredEvent;
-import info.patsch.ebl.books.search.BookSearchActivity;
 
-/**
- * Created by patsch on 22.08.16.
- */
 public class BookViewFragment extends RecyclerViewFragment implements FilterConstants, SearchView.OnQueryTextListener, SearchView.OnCloseListener {
 
     public static final String TAG = "BookViewFragment";
@@ -78,8 +73,10 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
 
         mFlags = getArguments().getInt(ARG_FLAGS);
         ArrayList<Parcelable> parcelables = getArguments().getParcelableArrayList(ARG_BOOKS);
-        for (Parcelable parcelable : parcelables) {
-            mBooks.add((Book) parcelable);
+        if (parcelables != null) {
+            for (Parcelable parcelable : parcelables) {
+                mBooks.add((Book) parcelable);
+            }
         }
 
         adapter.addAll(mBooks);
@@ -103,15 +100,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
 
         setLayoutManager(new LinearLayoutManager(getActivity()));
         setAdapter(adapter);
-
-        FloatingActionButton fab = (FloatingActionButton) view.findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(getActivity(), BookSearchActivity.class);
-                getActivity().startActivity(intent);
-            }
-        });
     }
 
     @Override
@@ -462,17 +450,9 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
                 }
             }
 
-            if (read != null && read != testBook.isRead()) {
-                return false;
-            }
-            if (book != null && book != testBook.isBook()) {
-                return false;
-            }
-            if (eBook != null && eBook != testBook.isEBook()) {
-                return false;
-            }
-
-            return true;
+            return !(read != null && read != testBook.isRead())
+                    && !(book != null && book != testBook.isBook())
+                    && !(eBook != null && eBook != testBook.isEBook());
         }
     }
 }

@@ -1,8 +1,10 @@
 package info.patsch.ebl;
 
 import android.app.ProgressDialog;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
@@ -38,6 +40,7 @@ import info.patsch.ebl.books.ModelFragment;
 import info.patsch.ebl.books.events.BooksFilteredEvent;
 import info.patsch.ebl.books.events.BooksLoadedEvent;
 import info.patsch.ebl.books.exception.ExceptionHandler;
+import info.patsch.ebl.books.search.BookSearchActivity;
 
 
 public class MainActivity extends AppCompatActivity implements FilterConstants {
@@ -95,6 +98,15 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         tabLayout.setupWithViewPager(mViewPager);
 
         mBookCount = (TextView) findViewById(R.id.book_count_bar);
+
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(MainActivity.this, BookSearchActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void setupPager(Set<Book> books) {

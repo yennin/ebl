@@ -4,9 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.List;
 
-/**
- * Created by patsch on 02.09.16.
- */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Data {
     private List<String> authorsinfo;
