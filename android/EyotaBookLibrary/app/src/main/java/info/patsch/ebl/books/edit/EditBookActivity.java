@@ -7,12 +7,15 @@ import org.greenrobot.eventbus.EventBus;
 
 import info.patsch.ebl.books.Book;
 import info.patsch.ebl.books.events.BookDBUpdateEvent;
+import info.patsch.ebl.books.exception.ExceptionHandler;
 
 public class EditBookActivity extends AppCompatActivity implements EditBookFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
 
         Book book = getIntent().getExtras().getParcelable(Book.BOOK_TAG);
 

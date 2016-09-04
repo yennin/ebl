@@ -105,7 +105,7 @@ public class FFSearch implements Callback<ResponseBody> {
         if (!hasImage(imageloc, imgurlAmazon)) {
             return null;
         }
-        return imageloc != null ? mContext.getString(R.string.ff_img_url) + "/" + imageloc : imgurlAmazon;
+        return imgurlAmazon == null ? mContext.getString(R.string.ff_img_url) + "/" + imageloc : imgurlAmazon;
     }
 
     @Override

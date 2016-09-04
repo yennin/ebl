@@ -36,7 +36,7 @@
     <string name="search">Search</string>
 
     <string name="ff_url">http://www.fantasticfiction.co.uk</string>
-    <string name="ff_img_url">http://img1.fantasticfiction.co.uk/thumb</string>
+    <string name="ff_img_url">https://img.fantasticfiction.com/bigthumbs</string>
     <string name="no_results">No Books found</string>
     <string name="new_book_added">New book added</string>
     <string name="book_alread_exists">Book already exists</string>

@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -23,6 +24,7 @@ import android.widget.Toast;
 
 import com.squareup.picasso.Downloader;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -41,7 +43,6 @@ import info.patsch.ebl.books.google.GoogleBooksService;
 import info.patsch.ebl.books.google.VolumeInfo;
 import info.patsch.ebl.scanner.IntentIntegrator;
 import info.patsch.ebl.scanner.IntentResult;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -154,7 +155,7 @@ public class BookSearchFragment extends RecyclerViewFragment
     }
 
     public void onActivityResult(int request, int result, Intent intent) {
-        mProgressDialog.dismiss();;
+        mProgressDialog.dismiss();
         IntentResult scan = IntentIntegrator.parseActivityResult(request, result, intent);
         if (scan != null && scan.getFormatName() != null) {
             String formatName = scan.getFormatName();
@@ -188,7 +189,6 @@ public class BookSearchFragment extends RecyclerViewFragment
             }
             onBooksFound(books);
         } else {
-            ResponseBody responseBody = response.errorBody();
             onNoResults();
         }
     }
@@ -257,7 +257,7 @@ public class BookSearchFragment extends RecyclerViewFragment
 
     @Override
     public void onFailure(Call call, Throwable t) {
-        mProgressDialog.dismiss();;
+        mProgressDialog.dismiss();
         Toast.makeText(getActivity(), t.getMessage(),
                 Toast.LENGTH_LONG).show();
         Log.e(getClass().getSimpleName(),
@@ -397,5 +397,32 @@ public class BookSearchFragment extends RecyclerViewFragment
     public interface OnFragmentInteractionListener {
 
         void onBookSelected(Book book);
+    }
+
+    private class PictureCallback implements Target {
+
+        private Book book;
+
+        public PictureCallback(Book book) {
+            this.book = book;
+        }
+
+        @Override
+        public void onBitmapLoaded(Bitmap bitmap, Picasso.LoadedFrom from) {
+            ByteArrayOutputStream stream = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);
+            byte[] byteArray = stream.toByteArray();
+            book.setImageEncoded(Base64.encodeToString(byteArray, Base64.URL_SAFE));
+        }
+
+        @Override
+        public void onBitmapFailed(Drawable errorDrawable) {
+
+        }
+
+        @Override
+        public void onPrepareLoad(Drawable placeHolderDrawable) {
+
+        }
     }
 }

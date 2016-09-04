@@ -22,6 +22,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.FirebaseDatabase;
+import com.squareup.picasso.OkHttpDownloader;
+import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -35,8 +37,8 @@ import info.patsch.ebl.books.FilterConstants;
 import info.patsch.ebl.books.ModelFragment;
 import info.patsch.ebl.books.events.BooksFilteredEvent;
 import info.patsch.ebl.books.events.BooksLoadedEvent;
+import info.patsch.ebl.books.exception.ExceptionHandler;
 
-;
 
 public class MainActivity extends AppCompatActivity implements FilterConstants {
 
@@ -53,18 +55,28 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
 
     ProgressDialog mProgressDialog = null;
 
-    private static boolean isDbInitialized = false;
+    private static boolean isInitialized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
 
-        if (!isDbInitialized) {
+        if (!isInitialized) {
             try {
                 FirebaseDatabase.getInstance().setPersistenceEnabled(true);
-                isDbInitialized = true;
+
+                OkHttpDownloader okHttpDownloader = new OkHttpDownloader(this);
+                Picasso picasso = new Picasso.Builder(this)
+                        .downloader(okHttpDownloader)
+                        .build();
+
+                Picasso.setSingletonInstance(picasso);
             } catch (DatabaseException ex) {
                 Log.w("MainActivity", ex.getMessage(), ex);
+            } catch (IllegalStateException ignored) {
+            } finally {
+                isInitialized = true;
             }
         }
 
@@ -82,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         TabLayout tabLayout = (TabLayout) findViewById(R.id.tabs);
         tabLayout.setupWithViewPager(mViewPager);
 
-        mBookCount = (TextView)findViewById(R.id.book_count_bar);
+        mBookCount = (TextView) findViewById(R.id.book_count_bar);
     }
 
     private void setupPager(Set<Book> books) {
@@ -90,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         // primary sections of the activity.
         SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), books);
         mViewPager.setAdapter(sectionsPagerAdapter);
-        mProgressDialog.dismiss();;
+        mProgressDialog.dismiss();
     }
 
     @Override
@@ -128,8 +140,7 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         if (event.getCount() > 0) {
             mBookCount.setText(getString(R.string.book_count, event.getCount()));
             mBookCount.setVisibility(View.VISIBLE);
-        }
-        else {
+        } else {
             mBookCount.setVisibility(View.GONE);
         }
     }

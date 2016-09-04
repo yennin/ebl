@@ -50,8 +50,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
     private final static String ARG_FLAGS = "flags";
     private static final String ARG_BOOKS = "books";
 
-    public static final int EDIT_BOOK_REQUEST = 37;
-
     private Set<Book> mBooks = null;
     private SortedList<Book> model = null;
     private BookAdapter adapter = null;

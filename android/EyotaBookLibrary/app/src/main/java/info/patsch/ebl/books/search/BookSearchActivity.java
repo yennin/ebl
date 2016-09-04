@@ -7,12 +7,15 @@ import org.greenrobot.eventbus.EventBus;
 
 import info.patsch.ebl.books.Book;
 import info.patsch.ebl.books.events.BookDBNewEvent;
+import info.patsch.ebl.books.exception.ExceptionHandler;
 
 public class BookSearchActivity extends AppCompatActivity implements BookSearchFragment.OnFragmentInteractionListener {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
 
         if (getSupportFragmentManager().findFragmentById(android.R.id.content) == null) {
             getSupportFragmentManager().beginTransaction()
