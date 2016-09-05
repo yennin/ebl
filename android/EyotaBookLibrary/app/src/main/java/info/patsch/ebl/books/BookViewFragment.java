@@ -2,7 +2,6 @@ package info.patsch.ebl.books;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.PopupMenu;
@@ -24,7 +23,6 @@ import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -43,9 +41,7 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
     private static final String STATE_QUERY = "state_query";
 
     private final static String ARG_FLAGS = "flags";
-    private static final String ARG_BOOKS = "books";
 
-    private Set<Book> mBooks = null;
     private SortedList<Book> model = null;
     private BookAdapter adapter = null;
 
@@ -57,11 +53,10 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
     public BookViewFragment() {
     }
 
-    public static BookViewFragment newInstance(Set<Book> books, int flags) {
+    public static BookViewFragment newInstance(int flags) {
         BookViewFragment fragment = new BookViewFragment();
         Bundle args = new Bundle();
         args.putInt(ARG_FLAGS, flags);
-        args.putParcelableArrayList(ARG_BOOKS, new ArrayList<>(books));
         fragment.setArguments(args);
         return fragment;
     }
@@ -72,14 +67,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
         mFlags = getArguments().getInt(ARG_FLAGS);
-        ArrayList<Parcelable> parcelables = getArguments().getParcelableArrayList(ARG_BOOKS);
-        if (parcelables != null) {
-            for (Parcelable parcelable : parcelables) {
-                mBooks.add((Book) parcelable);
-            }
-        }
 
-        adapter.addAll(mBooks);
+        adapter.addAll(BooksHolder.INSTANCE.getBooks());
         return rootView;
     }
 
@@ -89,7 +78,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
 
         setRetainInstance(true);
 
-        mBooks = new HashSet<>();
         adapter = new BookAdapter();
         model = new SortedList<>(Book.class, sortCallback);
     }
@@ -320,7 +308,8 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
             BookFilter filter = new BookFilter(constraint, readFlag, bookFlag, eBookFlag);
 
             List<Book> filteredBooks = new ArrayList<>();
-            for (Book book : mBooks) {
+            Set<Book> books = BooksHolder.INSTANCE.getBooks();
+            for (Book book : books) {
                 if (filter.accept(book)) {
                     filteredBooks.add(book);
                 }
@@ -401,8 +390,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onBookAdded(BookAddedEvent event) {
         Book book = event.getBook();
-        this.mBooks.remove(book);
-        this.mBooks.add(book);
         adapter.add(book);
         adapter.notifyDataSetChanged();
     }
@@ -410,7 +397,6 @@ public class BookViewFragment extends RecyclerViewFragment implements FilterCons
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
     public void onBookRemoved(BookRemovedEvent event) {
-        this.mBooks.remove(event.getBook());
         adapter.remove(event.getBook());
         adapter.notifyDataSetChanged();
     }

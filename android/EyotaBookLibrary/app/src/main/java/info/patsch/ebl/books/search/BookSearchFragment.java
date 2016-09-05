@@ -153,7 +153,6 @@ public class BookSearchFragment extends RecyclerViewFragment
     }
 
     public void onActivityResult(int request, int result, Intent intent) {
-        mProgressDialog.dismiss();
         IntentResult scan = IntentIntegrator.parseActivityResult(request, result, intent);
         if (scan != null && scan.getFormatName() != null) {
             String formatName = scan.getFormatName();
@@ -197,7 +196,7 @@ public class BookSearchFragment extends RecyclerViewFragment
         book.setYear(getYear(volumeInfo.getPublishedDate()));
         book.setAuthorName(join(volumeInfo.getAuthors(), ", "));
         book.setBook(true);
-        book.setImageLoc(volumeInfo.getImageLinks().getImageUrl());
+        book.setImageLoc(volumeInfo.getImageLinks() == null ? null : volumeInfo.getImageLinks().getImageUrl());
         book.setTitle(volumeInfo.getTitle());
 
         return book;
@@ -209,7 +208,7 @@ public class BookSearchFragment extends RecyclerViewFragment
         }
         Bitmap bitmap;
         try {
-            bitmap = Picasso.with(getActivity()).load(imageUrl).get();
+            bitmap = Picasso.with(getActivity()).load(imageUrl).resize(90, 110).onlyScaleDown().centerInside().get();
 
             ByteArrayOutputStream stream = new ByteArrayOutputStream();
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, stream);

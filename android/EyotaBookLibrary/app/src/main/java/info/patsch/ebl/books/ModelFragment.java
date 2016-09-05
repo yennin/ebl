@@ -22,9 +22,6 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import info.patsch.ebl.R;
 import info.patsch.ebl.books.events.BookAddedEvent;
 import info.patsch.ebl.books.events.BookDBNewEvent;
@@ -43,7 +40,7 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
     private FirebaseAuth mAuth = null;
     private DatabaseReference mBookRef = null;
 
-    private Set<Book> mBooks = null;
+    private BooksHolder mBooks = null;
 
     private boolean initialDataLoaded = false;
     private boolean isLoading = false;
@@ -54,7 +51,7 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
 
         setRetainInstance(true);
 
-        mBooks = new HashSet<>();
+        mBooks = BooksHolder.INSTANCE;
     }
 
     @Override
@@ -154,7 +151,8 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
                             Book book = child.getValue(Book.class);
                             mBooks.add(book);
                         }
-                        EventBus.getDefault().post(new BooksLoadedEvent(mBooks));
+                        mBooks.setInitialized(true);
+                        EventBus.getDefault().post(new BooksLoadedEvent());
                         Toast.makeText(getActivity(), TextUtils.concat(getString(R.string.done_loading, mBooks.size())), Toast.LENGTH_SHORT)
                                 .show();
                         initialDataLoaded = true;
@@ -195,6 +193,7 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
 
     private void updateBook(Book book) {
         mBookRef.child(book.getId()).setValue(book);
+        mBooks.remove(book);
         mBooks.add(book);
         EventBus.getDefault().postSticky(new BookAddedEvent(book));
     }
@@ -213,7 +212,7 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
         }
 
         if (book.getId() == null) { //new book
-            if (checkExisting(book)) {
+            if (mBooks.checkExisting(book)) {
                 Toast.makeText(getActivity(), R.string.book_alread_exists, Toast.LENGTH_LONG).show();
             }
             else {
@@ -238,36 +237,5 @@ public class ModelFragment extends Fragment implements FirebaseAuth.AuthStateLis
     public void onBookRemoved(BookDBRemoveEvent event) {
         mBookRef.child(event.getBook().getId()).removeValue();
         EventBus.getDefault().postSticky(new BookRemovedEvent(event.getBook()));
-    }
-
-    // external access
-
-    public Set<Book> getBooks() {
-        return mBooks;
-    }
-
-
-    private boolean checkExisting(Book newBook) {
-        ExistingBookFilter filter = new ExistingBookFilter(newBook);
-        for (Book book : mBooks) {
-            if (filter.accept(book)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    class ExistingBookFilter {
-        private Book newBook;
-
-        public ExistingBookFilter(Book newBook) {
-            this.newBook = newBook;
-        }
-
-        public boolean accept(Book testBook) {
-            return newBook.getTitle().equals(testBook.getTitle())
-                    && newBook.getAuthorName().equals(testBook.getAuthorName())
-                    && (newBook.getSeriesName() != null ? newBook.getSeriesName().equals(testBook.getSeriesName()) : testBook.getSeriesName() == null);
-        }
     }
 }

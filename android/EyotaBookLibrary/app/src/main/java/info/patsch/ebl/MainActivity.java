@@ -31,10 +31,8 @@ import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
-import java.util.Set;
-
-import info.patsch.ebl.books.Book;
 import info.patsch.ebl.books.BookViewFragment;
+import info.patsch.ebl.books.BooksHolder;
 import info.patsch.ebl.books.FilterConstants;
 import info.patsch.ebl.books.ModelFragment;
 import info.patsch.ebl.books.events.BooksFilteredEvent;
@@ -109,10 +107,10 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         });
     }
 
-    private void setupPager(Set<Book> books) {
+    private void setupPager() {
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
-        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager(), books);
+        SectionsPagerAdapter sectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(sectionsPagerAdapter);
         mProgressDialog.dismiss();
     }
@@ -134,8 +132,8 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
                         .beginTransaction()
                         .add(mfrag, MODEL)
                         .commit();
-            } else if (mfrag.getBooks() != null) {
-                EventBus.getDefault().post(new BooksLoadedEvent(mfrag.getBooks()));
+            } else if (BooksHolder.INSTANCE.isInitialized()) {
+                EventBus.getDefault().post(new BooksLoadedEvent());
             }
         }
     }
@@ -143,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
     @SuppressWarnings("unused")
     @Subscribe(threadMode = ThreadMode.MAIN)
     public void onBookLoaded(BooksLoadedEvent event) {
-        setupPager(event.getBooks());
+        setupPager();
     }
 
     @SuppressWarnings("unused")
@@ -232,24 +230,21 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
 
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
-        private Set<Book> books = null;
-
-        public SectionsPagerAdapter(FragmentManager fm, Set<Book> books) {
+        public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
-            this.books = books;
         }
 
         @Override
         public Fragment getItem(int position) {
             switch (position) {
                 case 0:
-                    return BookViewFragment.newInstance(books, ALL);
+                    return BookViewFragment.newInstance(ALL);
                 case 1:
-                    return BookViewFragment.newInstance(books, READ | ANY_EBOOK | ANY_BOOK);
+                    return BookViewFragment.newInstance(READ | ANY_EBOOK | ANY_BOOK);
                 case 2:
-                    return BookViewFragment.newInstance(books, ANY_BOOK | ANY_EBOOK);
+                    return BookViewFragment.newInstance(ANY_BOOK | ANY_EBOOK);
             }
-            return BookViewFragment.newInstance(books, ALL);
+            return BookViewFragment.newInstance(ALL);
         }
 
         @Override
