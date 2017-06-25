@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "200643045277-3lodo021lcjpf0055ttddfcpkdd3vsbf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "info.patsch.ebl",
+            "certificate_hash": "42EFA622E46BADE2247F5D10D8DF20008CAB7F16"
+          }
+        },
+        {
           "client_id": "200643045277-1li31r4mn9plb4245r9lkm2kbt3k8slg.apps.googleusercontent.com",
           "client_type": 3
         }
