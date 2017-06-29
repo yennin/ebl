@@ -2,7 +2,6 @@ package info.patsch.ebl;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -18,9 +17,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.auth.AuthUI;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.FirebaseDatabase;
@@ -30,6 +26,8 @@ import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
+
+import java.util.Arrays;
 
 import info.patsch.ebl.books.BookViewFragment;
 import info.patsch.ebl.books.BooksHolder;
@@ -45,7 +43,6 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
 
     private final static int RC_SIGN_IN = 27;
 
-    private GoogleApiClient mClient;
     private ViewPager mViewPager;
 
     private TextView mBookCount;
@@ -80,10 +77,6 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
                 isInitialized = true;
             }
         }
-
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        mClient = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -164,9 +157,6 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
     @Override
     public void onStart() {
         super.onStart();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        mClient.connect();
 
         // Default Database rules do not allow unauthenticated reads, so we need to
         // sign in before attaching the RecyclerView adapter otherwise the Adapter will
@@ -174,40 +164,11 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         if (!isSignedIn()) {
             signIn();
         }
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://info.patsch.ebl/http/host/path")
-        );
-        AppIndex.AppIndexApi.start(mClient, viewAction);
     }
 
     @Override
     public void onStop() {
         super.onStop();
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        Action viewAction = Action.newAction(
-                Action.TYPE_VIEW, // TODO: choose an action type.
-                "Main Page", // TODO: Define a title for the content shown.
-                // TODO: If you have web page content that matches this app activity's content,
-                // make sure this auto-generated web page URL is correct.
-                // Otherwise, set the URL to null.
-                Uri.parse("http://host/path"),
-                // TODO: Make sure this auto-generated app URL is correct.
-                Uri.parse("android-app://info.patsch.ebl/http/host/path")
-        );
-        AppIndex.AppIndexApi.end(mClient, viewAction);
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        mClient.disconnect();
     }
 
     private void signIn() {
@@ -216,10 +177,9 @@ public class MainActivity extends AppCompatActivity implements FilterConstants {
         startActivityForResult(
                 AuthUI.getInstance()
                         .createSignInIntentBuilder()
-                        .setProviders(
-                                AuthUI.EMAIL_PROVIDER,
-                                AuthUI.GOOGLE_PROVIDER)
-
+                        .setAvailableProviders(
+                                Arrays.asList(new AuthUI.IdpConfig.Builder(AuthUI.EMAIL_PROVIDER).build(),
+                                        new AuthUI.IdpConfig.Builder(AuthUI.GOOGLE_PROVIDER).build()))
                         .build(),
                 RC_SIGN_IN);
     }
